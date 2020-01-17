@@ -73,8 +73,8 @@ VolumeSolver::VolumeSolver::VolumeSolver(const TriMesh& volumeMesh, const MeshNo
 
   fError = (vsNode.row(vsMesh(0, 0)).array() - vsNode.row(vsMesh(0, 1)).array()).matrix().norm();
   fError = std::min(fError, (vsNode.row(vsMesh(0, 1)).array() - vsNode.row(vsMesh(0, 2)).array()).matrix().norm());
-  fError = sqrt(3.0 * fError * fError);
-  fErrorThreshold = 2.0;
+  fError = std::sqrt(3.0f * fError * fError);
+  fErrorThreshold = 2.0f;
 
   // Filling in boundary dictionary. This also takes care of
   // flipping the direction of a mesh element as computed by
@@ -143,7 +143,7 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
         MatIndex thisFreeBoundaryIdx = base::getIndex(vtemp);
         MeshNode thisFreeBoundary;
         slice::slice(vsNodeSmooth, thisFreeBoundaryIdx, three, thisFreeBoundary);
-        MeshNode thisFreeBoundarySmooth = smooth::smooth(thisFreeBoundary, smooth::Type::Cyclic, 0.001, MaxIterations);
+        MeshNode thisFreeBoundarySmooth = smooth::smooth(thisFreeBoundary, smooth::Type::Cyclic, 0.001f, MaxIterations);
         base::merge(thisFreeBoundarySmooth, vsNodeSmooth, thisFreeBoundaryIdx);
         markSectionAsComplete(thisFreeBoundaryIdx);
       }
@@ -166,7 +166,7 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
             {
               MeshNode thisTripleLine, thisTripleLineSmoothed;
               slice::slice(vsNodeSmooth, thisTripleLineIndex, three, thisTripleLine);
-              thisTripleLineSmoothed = smooth::smooth(thisTripleLine, smooth::Type::Serial, 0.001, MaxIterations);
+              thisTripleLineSmoothed = smooth::smooth(thisTripleLine, smooth::Type::Serial, 0.001f, MaxIterations);
               base::merge(thisTripleLineSmoothed, vsNodeSmooth, thisTripleLineIndex); /* HAVEN'T CHECKED FOR BUGS */
               markSectionAsComplete(thisTripleLineIndex);
             }
@@ -183,14 +183,14 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
     for(int i = 0; i < FB.size(); i++)
       fixed.push_back(std::get<0>(FB[i]));
     MatIndex nFixed = base::getIndex(fixed, nUniq);
-    MeshNode BoundaryNodeSmooth = smooth::smooth(BoundaryNode, nFixed, GL, 0.001, MaxIterations);
+    MeshNode BoundaryNodeSmooth = smooth::smooth(BoundaryNode, nFixed, GL, 0.001f, MaxIterations);
     base::merge(BoundaryNodeSmooth, vsNodeSmooth, nUniq);
     markSectionAsComplete(nUniq);
     // Done. Get out.
   }
 
-  Eigen::ArrayX3d fTemp = vsNodeSmooth.array() - vsNode.array();
-  Eigen::ArrayXd fNorm = (fTemp * fTemp).rowwise().sum().sqrt() / fError;
+  Eigen::ArrayX3f fTemp = vsNodeSmooth.array() - vsNode.array();
+  Eigen::ArrayXf fNorm = (fTemp * fTemp).rowwise().sum().sqrt() / fError;
   if((fNorm > fErrorThreshold).any())
   {
     for(int i = 0; i < Status.rows(); i++)

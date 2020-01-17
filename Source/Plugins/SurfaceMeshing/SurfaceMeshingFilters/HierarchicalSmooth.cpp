@@ -120,7 +120,7 @@ void HierarchicalSmooth::setupFilterParameters()
   }
 
   {
-    DataArraySelectionFilterParameter::RequirementType req = DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Double, 3, AttributeMatrix::Type::Any, IGeometry::Type::Any);
+    DataArraySelectionFilterParameter::RequirementType req = DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Float, 3, AttributeMatrix::Type::Any, IGeometry::Type::Any);
     parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Vertex List", VertexListPath, FilterParameter::Category::RequiredArray, HierarchicalSmooth, req));
   }
 
@@ -250,7 +250,7 @@ void HierarchicalSmooth::execute()
   }
 
   using TriMeshR = Eigen::Matrix<int, Eigen::Dynamic, k_VolumeMeshDimY, Eigen::RowMajor>;
-  using MeshNodeR = Eigen::Matrix<double, Eigen::Dynamic, k_SurfaceNodesDimY, Eigen::RowMajor>;
+  using MeshNodeR = Eigen::Matrix<float, Eigen::Dynamic, k_SurfaceNodesDimY, Eigen::RowMajor>;
   using FaceLabelR = Eigen::Matrix<int, Eigen::Dynamic, k_FaceLabelsDimY, Eigen::RowMajor>;
 
   TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).array();

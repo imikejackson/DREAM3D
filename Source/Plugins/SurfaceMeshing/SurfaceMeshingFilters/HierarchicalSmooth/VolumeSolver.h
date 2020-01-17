@@ -76,8 +76,8 @@ private:
   FaceLabel vsLabel;
   NodeType vsType;
   int MaxIterations;
-  double fError;
-  double fErrorThreshold;
+  float fError;
+  float fErrorThreshold;
   DictBase<std::vector<int>>::EdgeDict vsBoundaryDict;
 
   // member functions

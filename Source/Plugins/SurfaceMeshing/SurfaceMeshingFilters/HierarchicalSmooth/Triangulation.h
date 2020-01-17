@@ -79,7 +79,7 @@ private:
   EdgeList free_boundary_segments;
   std::vector<int> nUnique;
   DictBase<EdgeCount>::EdgeDict MyDict;
-  std::vector<double> fDiagCount;
+  std::vector<float> fDiagCount;
 
   // member functions
   std::tuple<EdgeList, EdgeList> getEdges(const TriMesh& tri);

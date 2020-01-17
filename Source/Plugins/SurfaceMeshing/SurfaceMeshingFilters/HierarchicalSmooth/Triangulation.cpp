@@ -114,7 +114,7 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh
   std::sort(nUnique.begin(), nUnique.end());
   nUnique.erase(std::unique(nUnique.begin(), nUnique.end()), nUnique.end());
 
-  fDiagCount = std::vector<double>(nUnique.size(), 0.0);
+  fDiagCount = std::vector<float>(nUnique.size(), 0.0f);
   nSubTri = HSmoothBase::isMember(tri, nUnique);
 
   for(int i = 0; i < nSubTri.rows(); i++)
@@ -132,8 +132,8 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh
         // not found yet; this is a new edge.
         EdgeCount EC(nUnique[this_row], nUnique[this_col]);
         MyDict.insert({EP, EC});
-        fDiagCount[this_row] += 1.0;
-        fDiagCount[this_col] += 1.0;
+        fDiagCount[this_row] += 1.0f;
+        fDiagCount[this_col] += 1.0f;
       }
       else
       {
@@ -203,8 +203,8 @@ std::tuple<SparseMatrixD, MatIndex> HSmoothTri::Triangulation::graphLaplacian() 
   {
     int l = std::get<0>(it->first);
     int m = std::get<1>(it->first);
-    tripletList.push_back(TripletD(l, m, -1.0));
-    tripletList.push_back(TripletD(m, l, -1.0));
+    tripletList.push_back(TripletD(l, m, -1.0f));
+    tripletList.push_back(TripletD(m, l, -1.0f));
   }
   for(int i = 0; i < fDiagCount.size(); i++)
     tripletList.push_back(TripletD(i, i, fDiagCount[i]));

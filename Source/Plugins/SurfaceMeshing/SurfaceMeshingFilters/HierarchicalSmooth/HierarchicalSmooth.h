@@ -53,13 +53,13 @@ enum class Type
 SparseMatrixD laplacian2D(int N, Type type = Type::Serial);
 std::tuple<SparseMatrixD, std::vector<int>> graphLaplacian(const TriMesh& tri);
 
-MeshNode smooth(const MeshNode& nodes, Type type = Type::Serial, double threshold = 0.001, int iterations = 53);
-MeshNode smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixD& GL, double threshold = 0.001, int iterations = 53);
+MeshNode smooth(const MeshNode& nodes, Type type = Type::Serial, float threshold = 0.001f, int iterations = 53);
+MeshNode smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixD& GL, float threshold = 0.001f, int iterations = 53);
 
 std::tuple<SparseMatrixD, SparseMatrixD> getDirichletBVP(const SparseMatrixD& GL, const SparseMatrixD& y, const MatIndex& nFixed, const MatIndex& nMobile);
 std::tuple<SparseMatrixD, SparseMatrixD> analyzeLaplacian(const SparseMatrixD& GL);
 
-double getObjFn(Smoother& smth, double feps, const SparseMatrixD& fSmallEye, const SparseMatrixD& LTL, const SparseMatrixD& LTK, const SparseMatrixD& Data, const MatIndex& nMobile,
+float getObjFn(Smoother& smth, float feps, const SparseMatrixD& fSmallEye, const SparseMatrixD& LTL, const SparseMatrixD& LTK, const SparseMatrixD& Data, const MatIndex& nMobile,
                 const SparseMatrixD& yMobile, const SparseMatrixD& D, const SparseMatrixD& AyIn, SparseMatrixD& yOut);
 
 } // namespace HSmoothMain

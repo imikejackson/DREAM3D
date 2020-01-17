@@ -130,8 +130,8 @@ void HSmoothBase::merge(const MeshNode& source, MeshNode& target, const MatIndex
 
 void HSmoothBase::merge(const SparseMatrixD& source, SparseMatrixD& target, const MatIndex& locations)
 {
-  MeshNode src = Eigen::MatrixXd(source);
-  MeshNode trg = Eigen::MatrixXd(target);
+  MeshNode src = Eigen::MatrixXf(source);
+  MeshNode trg = Eigen::MatrixXf(target);
   merge(src, trg, locations);
 
   target = trg.sparseView();

@@ -63,7 +63,7 @@ using TriMesh = Eigen::Array<int, Eigen::Dynamic, 3>;
  * Eigen array of float triplets, each row representing
  * a 3D cartesian mesh node.
  */
-using MeshNode = Eigen::Matrix<double, Eigen::Dynamic, 3>;
+using MeshNode = Eigen::Matrix<float, Eigen::Dynamic, 3>;
 
 /*
  * FaceLabel:
@@ -166,8 +166,8 @@ struct DictBase
  * TripletB:
  * Equivalent of T for boolean variables.
  */
-using SparseMatrixD = Eigen::SparseMatrix<double>;
-using TripletD = Eigen::Triplet<double>;
+using SparseMatrixD = Eigen::SparseMatrix<float>;
+using TripletD = Eigen::Triplet<float>;
 using SparseMatrixB = Eigen::SparseMatrix<bool>;
 using TripletB = Eigen::Triplet<bool>;
 
