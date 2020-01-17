@@ -121,8 +121,8 @@ MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 
 void HSmoothBase::merge(const MeshNode& source, MeshNode& target, const MatIndex& locations)
 {
-  for(int i = 0; i < source.cols(); i++)
-    target.col(locations(i)) << source.col(i);
+  for(int i = 0; i < source.rows(); i++)
+    target.row(locations(i)) << source.row(i);
   return;
 }
 
@@ -130,11 +130,11 @@ void HSmoothBase::merge(const MeshNode& source, MeshNode& target, const MatIndex
 
 void HSmoothBase::merge(const SparseMatrixD& source, SparseMatrixD& target, const MatIndex& locations)
 {
-  MeshNode src = Eigen::MatrixXd(source).transpose();
-  MeshNode trg = Eigen::MatrixXd(target).transpose();
+  MeshNode src = Eigen::MatrixXd(source);
+  MeshNode trg = Eigen::MatrixXd(target);
   merge(src, trg, locations);
 
-  target = trg.transpose().sparseView();
+  target = trg.sparseView();
   target.makeCompressed();
   return;
 }

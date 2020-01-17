@@ -71,8 +71,8 @@ VolumeSolver::VolumeSolver::VolumeSolver(const TriMesh& volumeMesh, const MeshNo
 
   vsNodeSmooth = vsNode;
 
-  fError = (vsNode.col(vsMesh(0, 0)).array() - vsNode.col(vsMesh(0, 1)).array()).matrix().norm();
-  fError = std::min(fError, (vsNode.col(vsMesh(0, 1)).array() - vsNode.col(vsMesh(0, 2)).array()).matrix().norm());
+  fError = (vsNode.row(vsMesh(0, 0)).array() - vsNode.row(vsMesh(0, 1)).array()).matrix().norm();
+  fError = std::min(fError, (vsNode.row(vsMesh(0, 1)).array() - vsNode.row(vsMesh(0, 2)).array()).matrix().norm());
   fError = sqrt(3.0 * fError * fError);
   fErrorThreshold = 2.0;
 
@@ -112,11 +112,8 @@ VolumeSolver::VolumeSolver::VolumeSolver(const TriMesh& volumeMesh, const MeshNo
 
 MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
 {
-  int ncount = 1;
-
   for(DictBase<std::vector<int>>::EdgeDict::iterator it = vsBoundaryDict.begin(); it != vsBoundaryDict.end(); ++it)
   {
-    //		outfile << "Boundary " << ncount<< " of " << vsBoundaryDict.size() << '\n';
     TriMesh triSub = sliceMesh(it->second);
     tri::Triangulation T(triSub);
 
@@ -129,7 +126,8 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
     EdgeList fbsec = std::get<1>(FreeBndData);
 
     for(int i = 0; i < fbsec.size(); i++)
-    { // smooth each free boundary first
+    {
+      // smooth each free boundary first
       int start, stop, count;
       start = std::get<0>(fbsec[i]);
       stop = std::get<1>(fbsec[i]);
@@ -144,7 +142,7 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
           vtemp.push_back(std::get<0>(FB[count]));
         MatIndex thisFreeBoundaryIdx = base::getIndex(vtemp);
         MeshNode thisFreeBoundary;
-        slice::slice(vsNodeSmooth, three, thisFreeBoundaryIdx, thisFreeBoundary);
+        slice::slice(vsNodeSmooth, thisFreeBoundaryIdx, three, thisFreeBoundary);
         MeshNode thisFreeBoundarySmooth = smooth::smooth(thisFreeBoundary, smooth::Type::Cyclic, 0.001, MaxIterations);
         base::merge(thisFreeBoundarySmooth, vsNodeSmooth, thisFreeBoundaryIdx);
         markSectionAsComplete(thisFreeBoundaryIdx);
@@ -167,7 +165,7 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
             if(!thisStatus.all())
             {
               MeshNode thisTripleLine, thisTripleLineSmoothed;
-              slice::slice(vsNodeSmooth, three, thisTripleLineIndex, thisTripleLine);
+              slice::slice(vsNodeSmooth, thisTripleLineIndex, three, thisTripleLine);
               thisTripleLineSmoothed = smooth::smooth(thisTripleLine, smooth::Type::Serial, 0.001, MaxIterations);
               base::merge(thisTripleLineSmoothed, vsNodeSmooth, thisTripleLineIndex); /* HAVEN'T CHECKED FOR BUGS */
               markSectionAsComplete(thisTripleLineIndex);
@@ -180,7 +178,7 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
     }
     // NOW, smooth entire boundary subject to fixed triple points.
     MeshNode BoundaryNode;
-    slice::slice(vsNodeSmooth, three, nUniq, BoundaryNode);
+    slice::slice(vsNodeSmooth, nUniq, three, BoundaryNode);
     std::vector<int> fixed;
     for(int i = 0; i < FB.size(); i++)
       fixed.push_back(std::get<0>(FB[i]));
@@ -188,19 +186,18 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
     MeshNode BoundaryNodeSmooth = smooth::smooth(BoundaryNode, nFixed, GL, 0.001, MaxIterations);
     base::merge(BoundaryNodeSmooth, vsNodeSmooth, nUniq);
     markSectionAsComplete(nUniq);
-    ncount++;
     // Done. Get out.
   }
 
-  Eigen::ArrayXXd fTemp = vsNodeSmooth.array() - vsNode.array();
-  Eigen::ArrayXXd fNorm = (fTemp * fTemp).colwise().sum().sqrt() / fError;
+  Eigen::ArrayX3d fTemp = vsNodeSmooth.array() - vsNode.array();
+  Eigen::ArrayXd fNorm = (fTemp * fTemp).rowwise().sum().sqrt() / fError;
   if((fNorm > fErrorThreshold).any())
   {
     for(int i = 0; i < Status.rows(); i++)
-      if(fNorm(0, i) > fErrorThreshold)
+      if(fNorm(i, 0) > fErrorThreshold)
       {
         Status(i, 0) = false;
-        vsNodeSmooth.col(i) << vsNode.col(i); // reset to old values.
+        vsNodeSmooth.row(i) << vsNode.row(i); // reset to old values.
       }
   }
 
@@ -209,7 +206,7 @@ MeshNode VolumeSolver::VolumeSolver::hierarchicalSmooth(LogCallback logFunction)
     std::stringstream ss;
     if(!Status.all())
     {
-      ss << "WARNING: " << (fNorm > fErrorThreshold).count() << " of " << vsNodeSmooth.cols() << " nodes not smoothed. "
+      ss << "WARNING: " << (fNorm > fErrorThreshold).count() << " of " << vsNodeSmooth.rows() << " nodes not smoothed. "
          << "Query VolumeSolver::Status for more information.";
     }
     else

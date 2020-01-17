@@ -60,10 +60,10 @@ using TriMesh = Eigen::Array<int, Eigen::Dynamic, 3>;
 
 /*
  * MeshNode:
- * Eigen array of float triplets, each column representing
+ * Eigen array of float triplets, each row representing
  * a 3D cartesian mesh node.
  */
-using MeshNode = Eigen::Matrix<double, 3, Eigen::Dynamic>;
+using MeshNode = Eigen::Matrix<double, Eigen::Dynamic, 3>;
 
 /*
  * FaceLabel:

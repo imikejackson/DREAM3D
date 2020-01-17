@@ -139,7 +139,7 @@ std::tuple<SparseMatrixD, std::vector<int>> HSmoothMain::graphLaplacian(const Tr
 
 MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, double threshold, int iterations)
 {
-  SparseMatrixD L = laplacian2D(nodes.cols(), type);
+  SparseMatrixD L = laplacian2D(nodes.rows(), type);
   std::vector<int> vidx;
 
   if(type == Type::Serial)
@@ -163,7 +163,7 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
   if(nMobile.size() == 0)
     return nodes;
 
-  SparseMatrixD Data = nodes.transpose().sparseView();
+  SparseMatrixD Data = nodes.sparseView();
 
   SparseMatrixD GLRed, fConst, D, A, AyIn, yMobile, fSmallEye, LTL, LTK, yOut;
 
@@ -210,7 +210,7 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
     nCount++;
   }
 
-  return Eigen::MatrixXd(yOut.transpose());
+  return Eigen::MatrixXd(yOut);
 }
 
 //============================================================================================

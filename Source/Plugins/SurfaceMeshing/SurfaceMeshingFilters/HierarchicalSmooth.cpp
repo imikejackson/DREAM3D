@@ -254,7 +254,7 @@ void HierarchicalSmooth::execute()
   using FaceLabelR = Eigen::Matrix<int, Eigen::Dynamic, k_FaceLabelsDimY, Eigen::RowMajor>;
 
   TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).array();
-  MeshNode vertices = Eigen::Map<const MeshNodeR>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY).transpose();
+  MeshNode vertices = Eigen::Map<const MeshNodeR>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
   FaceLabel faceLabels = Eigen::Map<const FaceLabelR>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY).array();
   NodeType nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY).array();
 
@@ -262,7 +262,7 @@ void HierarchicalSmooth::execute()
   auto logFunc = [this](const std::string& message) { notifyStatusMessage(QString::fromStdString(message)); };
   MeshNode smoothedVertices = volumeSolver.hierarchicalSmooth(logFunc);
 
-  Eigen::Map<MeshNode>(smoothedVertexList->data(), k_SurfaceNodesDimY, smoothedVertexList->getNumberOfTuples()) = smoothedVertices;
+  Eigen::Map<MeshNodeR>(smoothedVertexList->data(), smoothedVertexList->getNumberOfTuples(), k_SurfaceNodesDimY) = smoothedVertices;
 }
 
 // -----------------------------------------------------------------------------
