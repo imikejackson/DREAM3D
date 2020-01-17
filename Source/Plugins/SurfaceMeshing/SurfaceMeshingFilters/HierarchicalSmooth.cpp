@@ -60,12 +60,12 @@ constexpr size_t k_NodeTypesDimY = 1;
 
 struct HierarchicalSmooth::Impl
 {
-  Int32ArrayType::ConstWeakPointer m_TriList;
-  DoubleArrayType::ConstWeakPointer m_VertexList;
+  UInt64ArrayType::ConstWeakPointer m_TriList;
+  FloatArrayType::ConstWeakPointer m_VertexList;
   Int32ArrayType::ConstWeakPointer m_FaceLabelsList;
   Int32ArrayType::ConstWeakPointer m_NodeTypesList;
 
-  DoubleArrayType::WeakPointer m_SmoothedVertexList;
+  FloatArrayType::WeakPointer m_SmoothedVertexList;
 
   Impl() = default;
 
@@ -115,7 +115,7 @@ void HierarchicalSmooth::setupFilterParameters()
   parameters.push_back(SIMPL_NEW_UINT64_FP("Number of Iterations", Iterations, FilterParameter::Category::Parameter, HierarchicalSmooth));
 
   {
-    DataArraySelectionFilterParameter::RequirementType req = DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Int32, 3, AttributeMatrix::Type::Any, IGeometry::Type::Any);
+    DataArraySelectionFilterParameter::RequirementType req = DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::UInt64, 3, AttributeMatrix::Type::Any, IGeometry::Type::Any);
     parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Triangle List", TriListPath, FilterParameter::Category::RequiredArray, HierarchicalSmooth, req));
   }
 
@@ -165,8 +165,8 @@ void HierarchicalSmooth::dataCheck()
     return;
   }
 
-  p_Impl->m_TriList = dca->getPrereqArrayFromPath<DataArray<int32_t>, AbstractFilter>(this, getTriListPath(), cDims3);
-  p_Impl->m_VertexList = dca->getPrereqArrayFromPath<DataArray<double>, AbstractFilter>(this, getVertexListPath(), cDims3);
+  p_Impl->m_TriList = dca->getPrereqArrayFromPath<DataArray<uint64_t>, AbstractFilter>(this, getTriListPath(), cDims3);
+  p_Impl->m_VertexList = dca->getPrereqArrayFromPath<DataArray<float>, AbstractFilter>(this, getVertexListPath(), cDims3);
   p_Impl->m_FaceLabelsList = dca->getPrereqArrayFromPath<DataArray<int32_t>, AbstractFilter>(this, getFaceLabelsPath(), cDims2);
   p_Impl->m_NodeTypesList = dca->getPrereqArrayFromPath<DataArray<int32_t>, AbstractFilter>(this, getNodeTypesPath(), cDims1);
 
@@ -193,7 +193,7 @@ void HierarchicalSmooth::dataCheck()
     return;
   }
 
-  p_Impl->m_SmoothedVertexList = matrix->createNonPrereqArray<DoubleArrayType, AbstractFilter, double>(this, getSmoothedVertexArrayName(), 0.0, cDims3, createdPathID::DataArrayID);
+  p_Impl->m_SmoothedVertexList = matrix->createNonPrereqArray<FloatArrayType, AbstractFilter, float>(this, getSmoothedVertexArrayName(), 0.0f, cDims3, createdPathID::DataArrayID);
 }
 
 // -----------------------------------------------------------------------------
@@ -249,11 +249,11 @@ void HierarchicalSmooth::execute()
     return;
   }
 
-  using TriMeshR = Eigen::Matrix<int, Eigen::Dynamic, k_VolumeMeshDimY, Eigen::RowMajor>;
+  using TriMeshR = Eigen::Matrix<uint64_t, Eigen::Dynamic, k_VolumeMeshDimY, Eigen::RowMajor>;
   using MeshNodeR = Eigen::Matrix<float, Eigen::Dynamic, k_SurfaceNodesDimY, Eigen::RowMajor>;
   using FaceLabelR = Eigen::Matrix<int, Eigen::Dynamic, k_FaceLabelsDimY, Eigen::RowMajor>;
 
-  TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).array();
+  TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).cast<int>().array();
   MeshNode vertices = Eigen::Map<const MeshNodeR>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
   FaceLabel faceLabels = Eigen::Map<const FaceLabelR>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY).array();
   NodeType nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY).array();
