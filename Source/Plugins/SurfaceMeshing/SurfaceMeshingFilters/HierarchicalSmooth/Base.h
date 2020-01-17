@@ -75,7 +75,7 @@ MatIndex matUnion(const MatIndex& mat1, const MatIndex& mat2);
  * by the input MatIndex. NOTE: Source array should have same number of rows
  * as elements in the MatIndex. Two versions are provided, for sparse and dense.
  */
-void merge(const MeshNode& source, MeshNode& target, const MatIndex& locations);
+void merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<MeshNode> target, const MatIndex& locations);
 void merge(const SparseMatrixD& source, SparseMatrixD& target, const MatIndex& locations);
 
 } // namespace HSmoothBase

@@ -46,12 +46,13 @@ TriMesh HSmoothBase::isMember(const TriMesh& array1, const std::vector<int>& arr
 {
   std::unordered_map<int, int> MyDict; // dictionary lookup for faster access
   for(int i = 0; i < array2.size(); i++)
-    MyDict.insert({array2[i], i});
-  TriMesh NewTri = TriMesh::Zero(array1.rows(), array1.cols());
-  // running through Array1 in column-major order, Eigen's default
-  for(int col = 0; col < array1.cols(); col++)
   {
-    for(int row = 0; row < array1.rows(); row++)
+    MyDict.insert({array2[i], i});
+  }
+  TriMesh NewTri = TriMesh::Zero(array1.rows(), array1.cols());
+  for(int row = 0; row < array1.rows(); row++)
+  {
+    for(int col = 0; col < array1.cols(); col++)
     {
       std::unordered_map<int, int>::const_iterator got = MyDict.find(array1(row, col));
       NewTri(row, col) = got->second;
@@ -66,7 +67,9 @@ MatIndex HSmoothBase::getIndex(const std::vector<int>& inputVec)
 {
   MatIndex I(inputVec.size());
   for(int i = 0; i < inputVec.size(); i++)
+  {
     I(i) = inputVec[i];
+  }
 
   return I;
 }
@@ -77,7 +80,9 @@ MatIndex HSmoothBase::getIndex(const std::vector<int>& inputVec, const MatIndex&
 {
   std::unordered_map<int, int> dict;
   for(int i = 0; i < matIndex.rows(); i++)
+  {
     dict.insert({matIndex(i), i});
+  }
   std::vector<int> vtemp;
   for(int i = 0; i < inputVec.size(); i++)
   {
@@ -93,11 +98,17 @@ MatIndex HSmoothBase::getComplement(const MatIndex& nSet, int N)
 {
   MatIndex nAll = -1 * MatIndex::Ones(N, 1);
   for(int i = 0; i < nSet.size(); i++)
+  {
     nAll(nSet(i)) = nSet(i);
+  }
   std::vector<int> nComplement;
   for(int i = 0; i < nAll.size(); i++)
+  {
     if(nAll(i) < 0)
+    {
       nComplement.push_back(i);
+    }
+  }
 
   return getIndex(nComplement);
 }
@@ -108,9 +119,13 @@ MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 {
   std::vector<int> v;
   for(int i = 0; i < mat1.size(); i++)
+  {
     v.push_back(mat1(i));
+  }
   for(int i = 0; i < mat2.size(); i++)
+  {
     v.push_back(mat2(i));
+  }
   std::sort(v.begin(), v.end());
   v.erase(std::unique(v.begin(), v.end()), v.end());
 
@@ -119,11 +134,12 @@ MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 
 //============================================================================================
 
-void HSmoothBase::merge(const MeshNode& source, MeshNode& target, const MatIndex& locations)
+void HSmoothBase::merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<MeshNode> target, const MatIndex& locations)
 {
   for(int i = 0; i < source.rows(); i++)
+  {
     target.row(locations(i)) << source.row(i);
-  return;
+  }
 }
 
 //============================================================================================
@@ -136,5 +152,4 @@ void HSmoothBase::merge(const SparseMatrixD& source, SparseMatrixD& target, cons
 
   target = trg.sparseView();
   target.makeCompressed();
-  return;
 }

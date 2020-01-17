@@ -56,14 +56,14 @@
  * Eigen array of integer triplets; the prototype of Delaunay
  * triangulations in this library.
  */
-using TriMesh = Eigen::Array<int, Eigen::Dynamic, 3>;
+using TriMesh = Eigen::Array<int, Eigen::Dynamic, 3, Eigen::RowMajor>;
 
 /*
  * MeshNode:
  * Eigen array of float triplets, each row representing
  * a 3D cartesian mesh node.
  */
-using MeshNode = Eigen::Matrix<float, Eigen::Dynamic, 3>;
+using MeshNode = Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>;
 
 /*
  * FaceLabel:
@@ -71,7 +71,7 @@ using MeshNode = Eigen::Matrix<float, Eigen::Dynamic, 3>;
  * and represents a grain boundary patch by specifying the
  * grain IDs on either side of the patch.
  */
-using FaceLabel = Eigen::Array<int, Eigen::Dynamic, 2> ;
+using FaceLabel = Eigen::Array<int, Eigen::Dynamic, 2, Eigen::RowMajor> ;
 
 /*
  * NodeType:

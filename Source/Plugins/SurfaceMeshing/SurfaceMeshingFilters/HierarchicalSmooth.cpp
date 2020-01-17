@@ -249,20 +249,18 @@ void HierarchicalSmooth::execute()
     return;
   }
 
-  using TriMeshR = Eigen::Matrix<uint64_t, Eigen::Dynamic, k_VolumeMeshDimY, Eigen::RowMajor>;
-  using MeshNodeR = Eigen::Matrix<float, Eigen::Dynamic, k_SurfaceNodesDimY, Eigen::RowMajor>;
-  using FaceLabelR = Eigen::Matrix<int, Eigen::Dynamic, k_FaceLabelsDimY, Eigen::RowMajor>;
+  using TriMeshR = Eigen::Array<uint64_t, Eigen::Dynamic, k_VolumeMeshDimY, Eigen::RowMajor>;
 
-  TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).cast<int>().array();
-  MeshNode vertices = Eigen::Map<const MeshNodeR>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
-  FaceLabel faceLabels = Eigen::Map<const FaceLabelR>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY).array();
-  NodeType nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY).array();
+  TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).cast<int>();
+  auto vertices = Eigen::Map<const MeshNode>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
+  auto faceLabels = Eigen::Map<const FaceLabel>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY);
+  auto nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY);
 
-  VolumeSolver::VolumeSolver volumeSolver(triangles, vertices, faceLabels, nodeTypes, m_Iterations);
   auto logFunc = [this](const std::string& message) { notifyStatusMessage(QString::fromStdString(message)); };
-  MeshNode smoothedVertices = volumeSolver.hierarchicalSmooth(logFunc);
 
-  Eigen::Map<MeshNodeR>(smoothedVertexList->data(), smoothedVertexList->getNumberOfTuples(), k_SurfaceNodesDimY) = smoothedVertices;
+  auto smoothedVertices = Eigen::Map<MeshNode>(smoothedVertexList->data(), smoothedVertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
+
+  VolumeSolver::hierarchicalSmooth(triangles, vertices, faceLabels, nodeTypes, smoothedVertices, m_Iterations, logFunc);
 }
 
 // -----------------------------------------------------------------------------

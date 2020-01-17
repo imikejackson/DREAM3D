@@ -46,47 +46,9 @@
 
 namespace VolumeSolver
 {
+using LogCallback = std::function<void(const std::string&)>;
 
-class VolumeSolver
-{
-public:
-  using LogCallback = std::function<void(const std::string&)>; 
-
-  // constructor
-  VolumeSolver(const TriMesh& volumeMesh, const MeshNode& surfaceNodes, const FaceLabel& faceLabels, const NodeType& nodeType, int iterations = 53);
-  // the last integer default is the number of bisections in each call
-  // to the core smoothing routine. Obtained from a typical machine
-  // zero value of ~10^16.
-  // TODO: Generalize this to work for machine zero of the specific
-  // machine in use.
-
-  // smoother
-  MeshNode hierarchicalSmooth(LogCallback logFunction = LogCallback());
-
-  // writers
-  MeshNode getSmoothed() const;
-  IsSmoothed getNodeSmoothStatus() const;
-
-private:
-  // member objects; all these are instantiated in the constructor
-  IsSmoothed Status;
-  TriMesh vsMesh;
-  MeshNode vsNode;
-  MeshNode vsNodeSmooth;
-  FaceLabel vsLabel;
-  NodeType vsType;
-  int MaxIterations;
-  float fError;
-  float fErrorThreshold;
-  DictBase<std::vector<int>>::EdgeDict vsBoundaryDict;
-
-  // member functions
-  TriMesh sliceMesh(const std::vector<int>& patches) const;
-  void markSectionAsComplete(const MatIndex& idx);
-
-  // scratch
-  MatIndex one;
-  MatIndex three;
-};
+void hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eigen::Ref<const MeshNode>& surfaceNodes, const Eigen::Ref<const FaceLabel>& faceLabels, const Eigen::Ref<const NodeType>& nodeTypes,
+                        Eigen::Ref<MeshNode> smoothedNodes, int iterations = 53, LogCallback logFunction = LogCallback());
 
 } // namespace VolumeSolver
