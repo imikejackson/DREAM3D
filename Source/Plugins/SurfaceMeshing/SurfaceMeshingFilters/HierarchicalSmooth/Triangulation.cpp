@@ -110,7 +110,7 @@ std::tuple<HierarchicalSmooth::EdgeList, HierarchicalSmooth::EdgeList> Hierarchi
   {
     for(Eigen::Index j = 0; j < tri.cols(); j++)
     {
-      nUnique.push_back(tri(i, j));
+      nUnique.push_back(static_cast<int32_t>(tri(i, j)));
     }
   }
 
@@ -126,8 +126,8 @@ std::tuple<HierarchicalSmooth::EdgeList, HierarchicalSmooth::EdgeList> Hierarchi
     {
       int32_t l = (j + 3) % 3;
       int32_t m = (j + 4) % 3;
-      int32_t this_row = nSubTri(i, l);
-      int32_t this_col = nSubTri(i, m);
+      int32_t this_row = static_cast<int32_t>(nSubTri(i, l));
+      int32_t this_col = static_cast<int32_t>(nSubTri(i, m));
       EdgePair EP = std::make_pair(std::min(this_row, this_col), std::max(this_row, this_col));
       DictBase<EdgeCount>::EdgeDict::iterator got = MyDict.find(EP);
       if(got == MyDict.end())

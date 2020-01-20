@@ -52,7 +52,7 @@ HierarchicalSmooth::TriMesh HierarchicalSmooth::isMember(const TriMesh& array1, 
   {
     for(Eigen::Index col = 0; col < array1.cols(); col++)
     {
-      std::unordered_map<int32_t, int32_t>::const_iterator got = MyDict.find(array1(row, col));
+      std::unordered_map<int32_t, int32_t>::const_iterator got = MyDict.find(static_cast<int32_t>(array1(row, col)));
       NewTri(row, col) = got->second;
     }
   }

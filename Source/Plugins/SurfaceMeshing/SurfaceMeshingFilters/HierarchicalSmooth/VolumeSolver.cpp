@@ -103,14 +103,14 @@ void HierarchicalSmooth::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, cons
     {
       // new boundary, new dictionary entry
       std::vector<int32_t> v;
-      v.push_back(i);
+      v.push_back(static_cast<int32_t>(i));
       boundaryDict.insert({edgePair, v});
     }
     else
     {
       // this patch belongs to an already found boundary
       std::vector<int32_t>& vec = iter->second;
-      vec.push_back(i);
+      vec.push_back(static_cast<int32_t>(i));
     }
   }
 
