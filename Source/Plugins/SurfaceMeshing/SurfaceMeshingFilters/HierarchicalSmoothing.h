@@ -41,14 +41,14 @@
  * @brief The SurfaceMeshFilter class. This class serves as a superclass for other classes
  * in the SurfaceMeshing plugin.
  */
-class SurfaceMeshing_EXPORT HierarchicalSmooth : public AbstractFilter
+class SurfaceMeshing_EXPORT HierarchicalSmoothing : public AbstractFilter
 {
   Q_OBJECT
 
 #ifdef SIMPL_ENABLE_PYTHON
-  PYB11_CREATE_BINDINGS(HierarchicalSmooth SUPERCLASS AbstractFilter)
-  PYB11_SHARED_POINTERS(HierarchicalSmooth)
-  PYB11_STATIC_NEW_MACRO(HierarchicalSmooth)
+  PYB11_CREATE_BINDINGS(HierarchicalSmoothing SUPERCLASS AbstractFilter)
+  PYB11_SHARED_POINTERS(HierarchicalSmoothing)
+  PYB11_STATIC_NEW_MACRO(HierarchicalSmoothing)
   PYB11_PROPERTY(uint64_t Iterations READ getIterations WRITE setIterations)
   PYB11_PROPERTY(float Threshold READ getThreshold WRITE setThreshold)
   PYB11_PROPERTY(DataArrayPath DataContainerPath READ getDataContainerPath WRITE setDataContainerPath)
@@ -57,7 +57,7 @@ class SurfaceMeshing_EXPORT HierarchicalSmooth : public AbstractFilter
 #endif
 
 public:
-  using Self = HierarchicalSmooth;
+  using Self = HierarchicalSmoothing;
   using Pointer = std::shared_ptr<Self>;
   using ConstPointer = std::shared_ptr<const Self>;
   using WeakPointer = std::weak_ptr<Self>;
@@ -77,7 +77,7 @@ public:
    */
   static QString ClassName();
 
-  ~HierarchicalSmooth() override;
+  ~HierarchicalSmoothing() override;
 
   /**
    * @brief Getter property for Iterations
@@ -241,7 +241,7 @@ signals:
   void preflightExecuted();
 
 protected:
-  HierarchicalSmooth();
+  HierarchicalSmoothing();
 
   /**
    * @brief dataCheck Checks for the appropriate parameter values and availability of arrays
@@ -266,8 +266,8 @@ private:
   DataArrayPath m_NodeTypesPath;
 
 public:
-  HierarchicalSmooth(const HierarchicalSmooth&) = delete;            // Copy Constructor Not Implemented
-  HierarchicalSmooth(HierarchicalSmooth&&) = delete;                 // Move Constructor Not Implemented
-  HierarchicalSmooth& operator=(const HierarchicalSmooth&) = delete; // Copy Assignment Not Implemented
-  HierarchicalSmooth& operator=(HierarchicalSmooth&&) = delete;      // Move Assignment Not Implemented
+  HierarchicalSmoothing(const HierarchicalSmoothing&) = delete;            // Copy Constructor Not Implemented
+  HierarchicalSmoothing(HierarchicalSmoothing&&) = delete;                 // Move Constructor Not Implemented
+  HierarchicalSmoothing& operator=(const HierarchicalSmoothing&) = delete; // Copy Assignment Not Implemented
+  HierarchicalSmoothing& operator=(HierarchicalSmoothing&&) = delete;      // Move Assignment Not Implemented
 };

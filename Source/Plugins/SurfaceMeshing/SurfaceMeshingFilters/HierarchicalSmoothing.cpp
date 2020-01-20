@@ -28,7 +28,7 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "HierarchicalSmooth.h"
+#include "HierarchicalSmoothing.h"
 
 #include <QtCore/QTextStream>
 
@@ -53,7 +53,7 @@ constexpr size_t k_FaceLabelsDimY = 2;
 constexpr size_t k_NodeTypesDimY = 1;
 } // namespace
 
-struct HierarchicalSmooth::Impl
+struct HierarchicalSmoothing::Impl
 {
   UInt64ArrayType::WeakPointer m_TriList;
   FloatArrayType::WeakPointer m_VertexList;
@@ -79,7 +79,7 @@ struct HierarchicalSmooth::Impl
 };
 
 // -----------------------------------------------------------------------------
-HierarchicalSmooth::HierarchicalSmooth()
+HierarchicalSmoothing::HierarchicalSmoothing()
 : p_Impl(std::make_unique<Impl>())
 , m_Iterations(53)
 , m_Threshold(0.001f)
@@ -90,10 +90,10 @@ HierarchicalSmooth::HierarchicalSmooth()
 }
 
 // -----------------------------------------------------------------------------
-HierarchicalSmooth::~HierarchicalSmooth() = default;
+HierarchicalSmoothing::~HierarchicalSmoothing() = default;
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::initialize()
+void HierarchicalSmoothing::initialize()
 {
   clearErrorCode();
   clearWarningCode();
@@ -101,44 +101,44 @@ void HierarchicalSmooth::initialize()
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::setupFilterParameters()
+void HierarchicalSmoothing::setupFilterParameters()
 {
   FilterParameterVectorType parameters;
 
-  parameters.push_back(SIMPL_NEW_UINT64_FP("Max Number of Iterations", Iterations, FilterParameter::Category::Parameter, HierarchicalSmooth));
+  parameters.push_back(SIMPL_NEW_UINT64_FP("Max Number of Iterations", Iterations, FilterParameter::Category::Parameter, HierarchicalSmoothing));
 
-  parameters.push_back(SIMPL_NEW_FLOAT_FP("Threshold", Threshold, FilterParameter::Category::Parameter, HierarchicalSmooth));
+  parameters.push_back(SIMPL_NEW_FLOAT_FP("Threshold", Threshold, FilterParameter::Category::Parameter, HierarchicalSmoothing));
 
   {
     DataContainerSelectionFilterParameter::RequirementType req;
     req.dcGeometryTypes.push_back(IGeometry::Type::Triangle);
-    parameters.push_back(SIMPL_NEW_DC_SELECTION_FP("Input Geometry", DataContainerPath, FilterParameter::Category::RequiredArray, HierarchicalSmooth, req));
+    parameters.push_back(SIMPL_NEW_DC_SELECTION_FP("Input Geometry", DataContainerPath, FilterParameter::Category::RequiredArray, HierarchicalSmoothing, req));
   }
 
   {
     DataArraySelectionFilterParameter::RequirementType req =
         DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Int32, k_FaceLabelsDimY, AttributeMatrix::Type::Face, IGeometry::Type::Triangle);
-    parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Face Labels", FaceLabelsPath, FilterParameter::Category::RequiredArray, HierarchicalSmooth, req));
+    parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Face Labels", FaceLabelsPath, FilterParameter::Category::RequiredArray, HierarchicalSmoothing, req));
   }
 
   {
     DataArraySelectionFilterParameter::RequirementType req =
         DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Int32, k_NodeTypesDimY, AttributeMatrix::Type::Vertex, IGeometry::Type::Triangle);
-    parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Node Types", NodeTypesPath, FilterParameter::Category::RequiredArray, HierarchicalSmooth, req));
+    parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Node Types", NodeTypesPath, FilterParameter::Category::RequiredArray, HierarchicalSmoothing, req));
   }
 
   setFilterParameters(parameters);
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::readFilterParameters(AbstractFilterParametersReader* reader, int index)
+void HierarchicalSmoothing::readFilterParameters(AbstractFilterParametersReader* reader, int index)
 {
   reader->openFilterGroup(this, index);
   reader->closeFilterGroup();
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::dataCheck()
+void HierarchicalSmoothing::dataCheck()
 {
   clearErrorCode();
   clearWarningCode();
@@ -228,7 +228,7 @@ void HierarchicalSmooth::dataCheck()
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::preflight()
+void HierarchicalSmoothing::preflight()
 {
   // These are the REQUIRED lines of CODE to make sure the filter behaves correctly
   setInPreflight(true);              // Set the fact that we are preflighting.
@@ -240,7 +240,7 @@ void HierarchicalSmooth::preflight()
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::execute()
+void HierarchicalSmoothing::execute()
 {
   initialize();
   dataCheck();
@@ -301,9 +301,9 @@ void HierarchicalSmooth::execute()
 }
 
 // -----------------------------------------------------------------------------
-AbstractFilter::Pointer HierarchicalSmooth::newFilterInstance(bool copyFilterParameters) const
+AbstractFilter::Pointer HierarchicalSmoothing::newFilterInstance(bool copyFilterParameters) const
 {
-  HierarchicalSmooth::Pointer filter = HierarchicalSmooth::New();
+  HierarchicalSmoothing::Pointer filter = HierarchicalSmoothing::New();
   if(copyFilterParameters)
   {
     copyFilterParameterInstanceVariables(filter.get());
@@ -312,19 +312,19 @@ AbstractFilter::Pointer HierarchicalSmooth::newFilterInstance(bool copyFilterPar
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getCompiledLibraryName() const
+QString HierarchicalSmoothing::getCompiledLibraryName() const
 {
   return SurfaceMeshingConstants::SurfaceMeshingBaseName;
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getBrandingString() const
+QString HierarchicalSmoothing::getBrandingString() const
 {
   return SurfaceMeshingConstants::SurfaceMeshingBaseName;
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getFilterVersion() const
+QString HierarchicalSmoothing::getFilterVersion() const
 {
   QString version;
   QTextStream vStream(&version);
@@ -333,112 +333,112 @@ QString HierarchicalSmooth::getFilterVersion() const
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getGroupName() const
+QString HierarchicalSmoothing::getGroupName() const
 {
   return SIMPL::FilterGroups::Unsupported;
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getSubGroupName() const
+QString HierarchicalSmoothing::getSubGroupName() const
 {
   return SurfaceMeshingConstants::SurfaceMeshingPluginDisplayName;
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getHumanLabel() const
+QString HierarchicalSmoothing::getHumanLabel() const
 {
-  return "Hierarchical Smooth";
+  return "Hierarchical Smoothing";
 }
 
 // -----------------------------------------------------------------------------
-QUuid HierarchicalSmooth::getUuid() const
+QUuid HierarchicalSmoothing::getUuid() const
 {
-  return QUuid("{c9aec6ea-46a2-51c8-9e64-1f65dc3ce3e1}");
+  return QUuid("{7873b4b5-6b2a-551c-a683-2bdc10308ebf}");
 }
 
 // -----------------------------------------------------------------------------
-HierarchicalSmooth::Pointer HierarchicalSmooth::NullPointer()
+HierarchicalSmoothing::Pointer HierarchicalSmoothing::NullPointer()
 {
   return Pointer(static_cast<Self*>(nullptr));
 }
 
 // -----------------------------------------------------------------------------
-HierarchicalSmooth::Pointer HierarchicalSmooth::New()
+HierarchicalSmoothing::Pointer HierarchicalSmoothing::New()
 {
-  struct make_shared_enabler : public HierarchicalSmooth
+  struct make_shared_enabler : public HierarchicalSmoothing
   {
   };
   return std::make_shared<make_shared_enabler>();
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::getNameOfClass() const
+QString HierarchicalSmoothing::getNameOfClass() const
 {
   return ClassName();
 }
 
 // -----------------------------------------------------------------------------
-QString HierarchicalSmooth::ClassName()
+QString HierarchicalSmoothing::ClassName()
 {
-  return QString("HierarchicalSmooth");
+  return QString("HierarchicalSmoothing");
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::setIterations(uint64_t value)
+void HierarchicalSmoothing::setIterations(uint64_t value)
 {
   m_Iterations = value;
 }
 
 // -----------------------------------------------------------------------------
-uint64_t HierarchicalSmooth::getIterations() const
+uint64_t HierarchicalSmoothing::getIterations() const
 {
   return m_Iterations;
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::setThreshold(float value)
+void HierarchicalSmoothing::setThreshold(float value)
 {
   m_Threshold = value;
 }
 
 // -----------------------------------------------------------------------------
-float HierarchicalSmooth::getThreshold() const
+float HierarchicalSmoothing::getThreshold() const
 {
   return m_Threshold;
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::setFaceLabelsPath(const DataArrayPath& value)
+void HierarchicalSmoothing::setFaceLabelsPath(const DataArrayPath& value)
 {
   m_FaceLabelsPath = value;
 }
 
 // -----------------------------------------------------------------------------
-DataArrayPath HierarchicalSmooth::getFaceLabelsPath() const
+DataArrayPath HierarchicalSmoothing::getFaceLabelsPath() const
 {
   return m_FaceLabelsPath;
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::setNodeTypesPath(const DataArrayPath& value)
+void HierarchicalSmoothing::setNodeTypesPath(const DataArrayPath& value)
 {
   m_NodeTypesPath = value;
 }
 
 // -----------------------------------------------------------------------------
-DataArrayPath HierarchicalSmooth::getNodeTypesPath() const
+DataArrayPath HierarchicalSmoothing::getNodeTypesPath() const
 {
   return m_NodeTypesPath;
 }
 
 // -----------------------------------------------------------------------------
-void HierarchicalSmooth::setDataContainerPath(const DataArrayPath& value)
+void HierarchicalSmoothing::setDataContainerPath(const DataArrayPath& value)
 {
   m_DataContainerPath = value;
 }
 
 // -----------------------------------------------------------------------------
-DataArrayPath HierarchicalSmooth::getDataContainerPath() const
+DataArrayPath HierarchicalSmoothing::getDataContainerPath() const
 {
   return m_DataContainerPath;
 }

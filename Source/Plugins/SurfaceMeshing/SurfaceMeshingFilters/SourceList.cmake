@@ -31,7 +31,7 @@ set(_PublicFilters
   TriangleDihedralAngleFilter
   TriangleNormalFilter
   GenerateGeometryConnectivity
-  HierarchicalSmooth
+  HierarchicalSmoothing
 )
 
 if(SIMPL_USE_EIGEN)
