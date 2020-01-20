@@ -37,27 +37,21 @@
 #pragma once
 
 #include <cstdint>
-#include <iostream>
+#include <functional>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
-#include <tuple>
-#include <functional>
-#include <cstdlib>
 
 #include "Eigen/Eigen"
 #include "Eigen/Sparse"
 #include "Eigen/IterativeLinearSolvers"
-
-#define _CIRC_ sizeof(std::size_t) * 4
-
-// NOTE: 'int' is typedefed in iostream as unsigned long long, or something.
 
 /*
  * TriMesh:
  * Eigen array of integer triplets; the prototype of Delaunay
  * triangulations in this library.
  */
-using TriMesh = Eigen::Array<int, Eigen::Dynamic, 3, Eigen::RowMajor>;
+using TriMesh = Eigen::Array<uint64_t, Eigen::Dynamic, 3, Eigen::RowMajor>;
 
 /*
  * MeshNode:
@@ -105,7 +99,7 @@ using MatIndex = Eigen::Matrix<int, Eigen::Dynamic, 1>;
  * Bookkeeping devices for edges in a Delaunay mesh, each
  * edge being represented by an ordered pair of integers.
  */
-using EdgePair = std::pair<int, int>;
+using EdgePair = std::pair<int32_t, int32_t>;
 using EdgeList = std::vector<EdgePair>;
 
 /*
@@ -130,7 +124,7 @@ struct hash<EdgePair>
 {
   std::size_t operator()(const EdgePair& EP) const
   {
-    return std::hash<std::size_t>{}((std::size_t)EP.first << _CIRC_ | (std::size_t)EP.second);
+    return std::hash<std::size_t>{}(static_cast<std::size_t>(EP.first) << (sizeof(std::size_t) * 4) | static_cast<std::size_t>(EP.second));
   }
 };
 } // namespace std

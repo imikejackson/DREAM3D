@@ -75,8 +75,8 @@ void HSmoothTri::Triangulation::differentiateFaces()
 {
   int start = std::get<0>(free_boundary[0]);
   std::vector<int> thissec{0};
-  int n = 1;
-  while(n < free_boundary.size())
+
+  for(int32_t n = 1; n < free_boundary.size(); n++)
   {
     if(std::get<1>(free_boundary[n]) == start)
     {
@@ -89,9 +89,7 @@ void HSmoothTri::Triangulation::differentiateFaces()
       start = std::get<0>(free_boundary[n]);
       thissec.push_back(n);
     }
-    n++;
   }
-  return;
 }
 
 //===================================================================================
@@ -108,23 +106,28 @@ void HSmoothTri::Triangulation::differentiateFaces()
 
 std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh& tri)
 {
-  for(int i = 0; i < tri.rows(); i++)
-    for(int j = 0; j < tri.cols(); j++)
+  for(Eigen::Index i = 0; i < tri.rows(); i++)
+  {
+    for(Eigen::Index j = 0; j < tri.cols(); j++)
+    {
       nUnique.push_back(tri(i, j));
+    }
+  }
+
   std::sort(nUnique.begin(), nUnique.end());
   nUnique.erase(std::unique(nUnique.begin(), nUnique.end()), nUnique.end());
 
   fDiagCount = std::vector<float>(nUnique.size(), 0.0f);
   nSubTri = HSmoothBase::isMember(tri, nUnique);
 
-  for(int i = 0; i < nSubTri.rows(); i++)
+  for(Eigen::Index i = 0; i < nSubTri.rows(); i++)
   {
-    for(int j = 0; j < 3; j++)
+    for(int32_t j = 0; j < 3; j++)
     {
-      int l = (j + 3) % 3;
-      int m = (j + 4) % 3;
-      int this_row = nSubTri(i, l);
-      int this_col = nSubTri(i, m);
+      int32_t l = (j + 3) % 3;
+      int32_t m = (j + 4) % 3;
+      int32_t this_row = nSubTri(i, l);
+      int32_t this_col = nSubTri(i, m);
       EdgePair EP = std::make_pair(std::min(this_row, this_col), std::max(this_row, this_col));
       DictBase<EdgeCount>::EdgeDict::iterator got = MyDict.find(EP);
       if(got == MyDict.end())
@@ -144,11 +147,13 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh
     }
   }
 
-  for(DictBase<EdgeCount>::EdgeDict::iterator it = MyDict.begin(); it != MyDict.end(); ++it)
+  for(auto iter = MyDict.cbegin(); iter != MyDict.cend(); iter++)
   {
-    edge_list.push_back((it->second).orig_pair);
-    if((it->second).ncount == 1)
-      free_boundary.push_back((it->second).orig_pair);
+    edge_list.push_back((iter->second).orig_pair);
+    if((iter->second).ncount == 1)
+    {
+      free_boundary.push_back((iter->second).orig_pair);
+    }
   }
   return std::make_tuple(edge_list, fastChainLinkSort(free_boundary));
 }
@@ -158,36 +163,40 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh
 EdgeList HSmoothTri::Triangulation::fastChainLinkSort(const EdgeList& list)
 {
   std::unordered_map<int, std::vector<int>> WindingDict;
-  for(int i = 0; i < list.size(); i++)
+  for(size_t i = 0; i < list.size(); i++)
   {
-    int ltemp = std::get<0>(list[i]);
-    int rtemp = std::get<1>(list[i]);
+    int32_t ltemp = std::get<0>(list[i]);
+    int32_t rtemp = std::get<1>(list[i]);
     std::unordered_map<int, std::vector<int>>::iterator got = WindingDict.find(ltemp);
     if(got == WindingDict.end())
     {
-      std::vector<int> v{rtemp}; // yet another way to initialize a vector!
+      std::vector<int32_t> v{rtemp}; // yet another way to initialize a vector!
       WindingDict.insert({ltemp, v});
     }
     else
     {
-      std::vector<int>& vtemp = got->second;
+      std::vector<int32_t>& vtemp = got->second;
       vtemp.push_back(rtemp);
     }
   }
   EdgeList outList;
-  std::unordered_map<int, std::vector<int>>::iterator it = WindingDict.begin();
+  std::unordered_map<int32_t, std::vector<int32_t>>::iterator iter = WindingDict.begin();
   while(WindingDict.size() > 0)
   {
     // decimate the dictionary as chain-linked list is generated.
-    int next = (it->second).back(); // pop backwards; as good a way to fill as any!
-    EdgePair ptemp = std::make_pair(it->first, next);
+    int32_t next = (iter->second).back(); // pop backwards; as good a way to fill as any!
+    EdgePair ptemp = std::make_pair(iter->first, next);
     outList.push_back(ptemp);
-    (it->second).pop_back();
-    if((it->second).size() == 0)
-      WindingDict.erase(it);
-    it = WindingDict.find(next);
-    if(it == WindingDict.end())
-      it = WindingDict.begin();
+    (iter->second).pop_back();
+    if((iter->second).size() == 0)
+    {
+      WindingDict.erase(iter);
+    }
+    iter = WindingDict.find(next);
+    if(iter == WindingDict.end())
+    {
+      iter = WindingDict.begin();
+    }
   }
   return outList;
 }
@@ -199,15 +208,17 @@ std::tuple<SparseMatrixF, MatIndex> HSmoothTri::Triangulation::graphLaplacian() 
   // most of the work already done in method GetEdges
   std::vector<TripletF> tripletList;
   tripletList.reserve(nUnique.size() + 2 * Mesh.rows() * Mesh.cols());
-  for(auto it = MyDict.cbegin(); it != MyDict.cend(); ++it)
+  for(auto iter = MyDict.cbegin(); iter != MyDict.cend(); iter++)
   {
-    int l = std::get<0>(it->first);
-    int m = std::get<1>(it->first);
+    int32_t l = std::get<0>(iter->first);
+    int32_t m = std::get<1>(iter->first);
     tripletList.push_back(TripletF(l, m, -1.0f));
     tripletList.push_back(TripletF(m, l, -1.0f));
   }
-  for(int i = 0; i < fDiagCount.size(); i++)
+  for(int32_t i = 0; i < fDiagCount.size(); i++)
+  {
     tripletList.push_back(TripletF(i, i, fDiagCount[i]));
+  }
 
   SparseMatrixF GL = SparseMatrixF(nUnique.size(), nUnique.size());
   GL.setFromTriplets(tripletList.begin(), tripletList.end());

@@ -102,18 +102,18 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
       std::swap(volumeMesh(i, 0), volumeMesh(i, 1));
     }
     EdgePair edgePair = std::make_pair(min, max);
-    DictBase<std::vector<int>>::EdgeDict::iterator iter = boundaryDict.find(edgePair);
+    DictBase<std::vector<int32_t>>::EdgeDict::iterator iter = boundaryDict.find(edgePair);
     if(iter == boundaryDict.end())
     {
       // new boundary, new dictionary entry
-      std::vector<int> v;
+      std::vector<int32_t> v;
       v.push_back(i);
       boundaryDict.insert({edgePair, v});
     }
     else
     {
       // this patch belongs to an already found boundary
-      std::vector<int>& vec = iter->second;
+      std::vector<int32_t>& vec = iter->second;
       vec.push_back(i);
     }
   }
@@ -131,12 +131,12 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
     EdgeList freeBoundry = std::get<0>(freeBoundryData);
     EdgeList freeBoundrySegments = std::get<1>(freeBoundryData);
 
-    for(int i = 0; i < freeBoundrySegments.size(); i++)
+    for(size_t i = 0; i < freeBoundrySegments.size(); i++)
     {
       // smooth each free boundary first
-      int count = 0;
-      int start = std::get<0>(freeBoundrySegments[i]);
-      int stop = std::get<1>(freeBoundrySegments[i]);
+      int32_t count = 0;
+      int32_t start = std::get<0>(freeBoundrySegments[i]);
+      int32_t stop = std::get<1>(freeBoundrySegments[i]);
       for(count = start; count <= stop; count++)
       {
         if(nodeTypes(std::get<0>(freeBoundry[count])) % 10 == 4)
@@ -145,7 +145,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
         }
       }
 
-      std::vector<int> vtemp;
+      std::vector<int32_t> vtemp;
       if(count > stop)
       {
         // no quad jns in this free boundary. smooth without constraints and get out.
@@ -165,10 +165,10 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
       {
         // triple line sections found; smooth separately.
         vtemp.push_back(std::get<0>(freeBoundry[count]));
-        int size = 1 + (stop - start);
-        for(int j = count + 1; j < 1 + count + size; j++)
+        int32_t size = 1 + (stop - start);
+        for(int32_t j = count + 1; j < 1 + count + size; j++)
         {
-          int effective_j = j % size;
+          int32_t effective_j = j % size;
           vtemp.push_back(std::get<0>(freeBoundry[effective_j]));
           if(nodeTypes(std::get<0>(freeBoundry[effective_j])) % 10 == 4)
           {
@@ -193,8 +193,8 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
     // NOW, smooth entire boundary subject to fixed triple points.
     MeshNode boundaryNode;
     slice::slice(smoothedNodes, nUniq, k_Three, boundaryNode);
-    std::vector<int> fixed;
-    for(int i = 0; i < freeBoundry.size(); i++)
+    std::vector<int32_t> fixed;
+    for(size_t i = 0; i < freeBoundry.size(); i++)
     {
       fixed.push_back(std::get<0>(freeBoundry[i]));
     }
@@ -209,7 +209,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
   Eigen::ArrayXf normArray = (tempArray * tempArray).rowwise().sum().sqrt() / error;
   if((normArray > errorThreshold).any())
   {
-    for(int i = 0; i < status.rows(); i++)
+    for(Eigen::Index i = 0; i < status.rows(); i++)
       if(normArray(i, 0) > errorThreshold)
       {
         status(i, 0) = false;

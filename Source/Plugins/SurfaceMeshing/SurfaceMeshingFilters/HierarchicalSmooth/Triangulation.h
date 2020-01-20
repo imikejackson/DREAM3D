@@ -52,7 +52,7 @@ struct EdgeCount
 {
   EdgePair orig_pair;
   int ncount;
-  EdgeCount(int x, int y)
+  EdgeCount(int32_t x, int32_t y)
   {
     orig_pair = std::make_pair(x, y);
     ncount = 1; // i.e. one edge already found at time of instantiation.
@@ -77,7 +77,7 @@ private:
   EdgeList edge_list;
   EdgeList free_boundary;
   EdgeList free_boundary_segments;
-  std::vector<int> nUnique;
+  std::vector<int32_t> nUnique;
   DictBase<EdgeCount>::EdgeDict MyDict;
   std::vector<float> fDiagCount;
 
