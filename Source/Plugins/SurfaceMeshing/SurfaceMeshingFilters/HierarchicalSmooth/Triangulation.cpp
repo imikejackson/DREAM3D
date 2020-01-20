@@ -74,7 +74,7 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::freeBoundary() const
 void HSmoothTri::Triangulation::differentiateFaces()
 {
   int start = std::get<0>(free_boundary[0]);
-  std::vector<int> thissec{0};
+  std::vector<int32_t> thissec{0};
 
   for(int32_t n = 1; n < free_boundary.size(); n++)
   {

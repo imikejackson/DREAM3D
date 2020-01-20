@@ -53,8 +53,8 @@ enum class Type
 SparseMatrixF laplacian2D(int32_t N, Type type = Type::Serial);
 std::tuple<SparseMatrixF, std::vector<int32_t>> graphLaplacian(const TriMesh& tri);
 
-MeshNode smooth(const MeshNode& nodes, Type type = Type::Serial, float threshold = 0.001f, int32_t iterations = 53);
-MeshNode smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold = 0.001f, int32_t iterations = 53);
+MeshNode smooth(const MeshNode& nodes, Type type = Type::Serial, float threshold = 0.001f, uint64_t iterations = 53);
+MeshNode smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold = 0.001f, uint64_t iterations = 53);
 
 std::tuple<SparseMatrixF, SparseMatrixF> getDirichletBVP(const SparseMatrixF& GL, const SparseMatrixF& y, const MatIndex& nFixed, const MatIndex& nMobile);
 std::tuple<SparseMatrixF, SparseMatrixF> analyzeLaplacian(const SparseMatrixF& GL);

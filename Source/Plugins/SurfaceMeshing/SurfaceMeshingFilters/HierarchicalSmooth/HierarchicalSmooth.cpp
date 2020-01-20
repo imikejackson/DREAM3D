@@ -147,7 +147,7 @@ std::tuple<SparseMatrixF, std::vector<int32_t>> HSmoothMain::graphLaplacian(cons
 
 //============================================================================================
 
-MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, int32_t iterations)
+MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, uint64_t iterations)
 {
   SparseMatrixF L = laplacian2D(nodes.rows(), type);
   std::vector<int32_t> vidx;
@@ -167,7 +167,7 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, 
 
 //============================================================================================
 
-MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold, int32_t iterations)
+MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold, uint64_t iterations)
 {
   MatIndex nMobile = HSmoothBase::getComplement(nFixed, GL.cols());
   if(nMobile.size() == 0)
@@ -200,7 +200,7 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
 
   float fEps = 0.5f;
   float fStep = fEps / 2.0f;
-  int32_t nCount = 1;
+  uint64_t nCount = 1;
 
   float fobj1, fobj2, fslope;
   fobj1 = getObjFn(smth, fEps, fSmallEye, LTL, LTK, Data, nMobile, yMobile, D, AyIn, yOut); // only the last parameter is actually modified
@@ -268,7 +268,7 @@ std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::analyzeLaplacian(const Spa
 
   for(int32_t k = 0; k < GL.outerSize(); ++k)
   {
-    for(SparseMatrixF::InnerIterator iter(GL, k); iter; iter++)
+    for(SparseMatrixF::InnerIterator iter(GL, k); iter; ++iter)
     {
       if(iter.value() < -0.5)
       {

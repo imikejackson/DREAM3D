@@ -71,7 +71,7 @@ void markSectionAsComplete(IsSmoothed& status, const MatIndex& idx)
 } // namespace
 
 void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eigen::Ref<const MeshNode>& surfaceNodes, const Eigen::Ref<const FaceLabel>& faceLabels,
-                                      const Eigen::Ref<const NodeType>& nodeTypes, Eigen::Ref<MeshNode> smoothedNodes, int iterations, LogCallback logFunction)
+                                      const Eigen::Ref<const NodeType>& nodeTypes, Eigen::Ref<MeshNode> smoothedNodes, uint64_t iterations, LogCallback logFunction)
 {
   DictBase<std::vector<int>>::EdgeDict boundaryDict;
 
