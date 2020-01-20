@@ -58,7 +58,7 @@ struct HierarchicalSmoothing::Impl
   UInt64ArrayType::WeakPointer m_TriList;
   FloatArrayType::WeakPointer m_VertexList;
   Int32ArrayType::ConstWeakPointer m_FaceLabelsList;
-  Int32ArrayType::ConstWeakPointer m_NodeTypesList;
+  Int8ArrayType::ConstWeakPointer m_NodeTypesList;
 
   Impl() = default;
 
@@ -123,7 +123,7 @@ void HierarchicalSmoothing::setupFilterParameters()
 
   {
     DataArraySelectionFilterParameter::RequirementType req =
-        DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Int32, k_NodeTypesDimY, AttributeMatrix::Type::Vertex, IGeometry::Type::Triangle);
+        DataArraySelectionFilterParameter::CreateRequirement(SIMPL::TypeNames::Int8, k_NodeTypesDimY, AttributeMatrix::Type::Vertex, IGeometry::Type::Triangle);
     parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Node Types", NodeTypesPath, FilterParameter::Category::RequiredArray, HierarchicalSmoothing, req));
   }
 
@@ -188,7 +188,7 @@ void HierarchicalSmoothing::dataCheck()
     return;
   }
 
-  auto nodeTypes = dca->getPrereqArrayFromPath<Int32ArrayType, AbstractFilter>(this, m_NodeTypesPath, nodeTypesComponentDims);
+  auto nodeTypes = dca->getPrereqArrayFromPath<Int8ArrayType, AbstractFilter>(this, m_NodeTypesPath, nodeTypesComponentDims);
   if(nodeTypes == nullptr)
   {
     return;
@@ -197,13 +197,13 @@ void HierarchicalSmoothing::dataCheck()
   const std::vector<size_t> trianglesComponentDims{k_TrianglesDimY};
   const std::vector<size_t> verticesComponentDims{k_VerticesDimY};
 
-  if(triangles->getComponentDimensions() == trianglesComponentDims)
+  if(triangles->getComponentDimensions() != trianglesComponentDims)
   {
     setErrorCondition(-14, QObject::tr("Triangles data array has the wrong component dimensions."));
     return;
   }
 
-  if(vertices->getComponentDimensions() == verticesComponentDims)
+  if(vertices->getComponentDimensions() != verticesComponentDims)
   {
     setErrorCondition(-15, QObject::tr("Vertices data array has the wrong component dimensions."));
     return;

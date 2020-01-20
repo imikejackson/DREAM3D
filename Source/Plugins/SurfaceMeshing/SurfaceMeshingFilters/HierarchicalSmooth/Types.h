@@ -77,7 +77,7 @@ using FaceLabel = Eigen::Array<int32_t, Eigen::Dynamic, 2, Eigen::RowMajor>;
  * ( denoted by 2, 3, 4 respectively if on the interior and
  * 12, 13, 14 if on the volume surface.
  */
-using NodeType = Eigen::Array<int32_t, Eigen::Dynamic, 1>;
+using NodeType = Eigen::Array<int8_t, Eigen::Dynamic, 1>;
 
 /*
  * IsSmoothed:
