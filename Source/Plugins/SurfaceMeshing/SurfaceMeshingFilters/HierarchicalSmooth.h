@@ -53,7 +53,7 @@ class SurfaceMeshing_EXPORT HierarchicalSmooth : public AbstractFilter
   PYB11_PROPERTY(DataArrayPath TriListPath READ getTriListPath WRITE setTriListPath)
   PYB11_PROPERTY(DataArrayPath VertexListPath READ getVertexListPath WRITE setVertexListPath)
   PYB11_PROPERTY(DataArrayPath FaceLabelsPath READ getFaceLabelsPath WRITE setFaceLabelsPath)
-  PYB11_PROPERTY(DataArrayPath NodeTypePath READ getNodeTypePath WRITE setNodeTypePath)
+  PYB11_PROPERTY(DataArrayPath NodeTypesPath READ getNodeTypesPath WRITE setNodeTypesPath)
   PYB11_PROPERTY(QString SmoothedVertexArrayName READ getSmoothedVertexArrayName WRITE setSmoothedVertexArrayName)
 #endif
 
