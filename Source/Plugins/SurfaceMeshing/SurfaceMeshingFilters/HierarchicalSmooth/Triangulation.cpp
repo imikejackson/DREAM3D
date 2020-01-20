@@ -38,9 +38,9 @@
 
 //===================================================================================
 
-HSmoothTri::Triangulation::Triangulation() = default;
+HierarchicalSmooth::Triangulation::Triangulation() = default;
 
-HSmoothTri::Triangulation::Triangulation(const TriMesh& tri)
+HierarchicalSmooth::Triangulation::Triangulation(const TriMesh& tri)
 {
   Mesh = tri;
   std::tuple<EdgeList, EdgeList> GetAllEdges = getEdges(Mesh);
@@ -51,27 +51,27 @@ HSmoothTri::Triangulation::Triangulation(const TriMesh& tri)
 
 //===================================================================================
 
-TriMesh HSmoothTri::Triangulation::connectivityList() const
+HierarchicalSmooth::TriMesh HierarchicalSmooth::Triangulation::connectivityList() const
 {
   return Mesh;
 }
 
 //===================================================================================
 
-EdgeList HSmoothTri::Triangulation::allEdges() const
+HierarchicalSmooth::EdgeList HierarchicalSmooth::Triangulation::allEdges() const
 {
   return edge_list;
 }
 
 //===================================================================================
 
-std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::freeBoundary() const
+std::tuple<HierarchicalSmooth::EdgeList, HierarchicalSmooth::EdgeList> HierarchicalSmooth::Triangulation::freeBoundary() const
 {
   return std::make_tuple(free_boundary, free_boundary_segments);
 }
 
 //===================================================================================
-void HSmoothTri::Triangulation::differentiateFaces()
+void HierarchicalSmooth::Triangulation::differentiateFaces()
 {
   int start = std::get<0>(free_boundary[0]);
   std::vector<int32_t> thissec{0};
@@ -104,7 +104,7 @@ void HSmoothTri::Triangulation::differentiateFaces()
  * is provided for choice.
  */
 
-std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh& tri)
+std::tuple<HierarchicalSmooth::EdgeList, HierarchicalSmooth::EdgeList> HierarchicalSmooth::Triangulation::getEdges(const TriMesh& tri)
 {
   for(Eigen::Index i = 0; i < tri.rows(); i++)
   {
@@ -118,7 +118,7 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh
   nUnique.erase(std::unique(nUnique.begin(), nUnique.end()), nUnique.end());
 
   fDiagCount = std::vector<float>(nUnique.size(), 0.0f);
-  nSubTri = HSmoothBase::isMember(tri, nUnique);
+  nSubTri = HierarchicalSmooth::isMember(tri, nUnique);
 
   for(Eigen::Index i = 0; i < nSubTri.rows(); i++)
   {
@@ -160,7 +160,7 @@ std::tuple<EdgeList, EdgeList> HSmoothTri::Triangulation::getEdges(const TriMesh
 
 //===================================================================================
 
-EdgeList HSmoothTri::Triangulation::fastChainLinkSort(const EdgeList& list)
+HierarchicalSmooth::EdgeList HierarchicalSmooth::Triangulation::fastChainLinkSort(const EdgeList& list)
 {
   std::unordered_map<int, std::vector<int>> WindingDict;
   for(size_t i = 0; i < list.size(); i++)
@@ -203,7 +203,7 @@ EdgeList HSmoothTri::Triangulation::fastChainLinkSort(const EdgeList& list)
 
 //===================================================================================
 
-std::tuple<SparseMatrixF, MatIndex> HSmoothTri::Triangulation::graphLaplacian() const
+std::tuple<HierarchicalSmooth::SparseMatrixF, HierarchicalSmooth::MatIndex> HierarchicalSmooth::Triangulation::graphLaplacian() const
 {
   // most of the work already done in method GetEdges
   std::vector<TripletF> tripletList;
@@ -224,7 +224,7 @@ std::tuple<SparseMatrixF, MatIndex> HSmoothTri::Triangulation::graphLaplacian() 
   GL.setFromTriplets(tripletList.begin(), tripletList.end());
   GL.makeCompressed();
 
-  return std::make_tuple(GL, HSmoothBase::getIndex(nUnique));
+  return std::make_tuple(GL, HierarchicalSmooth::getIndex(nUnique));
 }
 
 //===================================================================================

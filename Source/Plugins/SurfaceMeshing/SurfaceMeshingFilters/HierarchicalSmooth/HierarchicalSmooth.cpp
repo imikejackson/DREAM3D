@@ -47,7 +47,7 @@
 
 //============================================================================================
 
-SparseMatrixF HSmoothMain::laplacian2D(int32_t N, Type type)
+HierarchicalSmooth::SparseMatrixF HierarchicalSmooth::laplacian2D(int32_t N, Type type)
 {
   std::vector<TripletF> tripletList;
   tripletList.reserve(3 * N); // approx. number of nonzero elements
@@ -79,7 +79,7 @@ SparseMatrixF HSmoothMain::laplacian2D(int32_t N, Type type)
   break;
   default:
   {
-    qDebug() << "HSmoothMain::Laplacian2D: Unrecognized type.";
+    qDebug() << "HierarchicalSmooth::Laplacian2D: Unrecognized type.";
   }
   break;
   }
@@ -90,7 +90,7 @@ SparseMatrixF HSmoothMain::laplacian2D(int32_t N, Type type)
 
 //============================================================================================
 
-std::tuple<SparseMatrixF, std::vector<int32_t>> HSmoothMain::graphLaplacian(const TriMesh& tri)
+std::tuple<HierarchicalSmooth::SparseMatrixF, std::vector<int32_t>> HierarchicalSmooth::graphLaplacian(const TriMesh& tri)
 {
   std::vector<int32_t> nUnique;
   for(Eigen::Index i = 0; i < tri.rows(); i++)
@@ -109,7 +109,7 @@ std::tuple<SparseMatrixF, std::vector<int32_t>> HSmoothMain::graphLaplacian(cons
 
   std::vector<float> fDiagCount(nUnique.size(), 0.0f);
 
-  TriMesh nSubTri = HSmoothBase::isMember(tri, nUnique);
+  TriMesh nSubTri = HierarchicalSmooth::isMember(tri, nUnique);
 
   DictBase<int32_t>::EdgeDict MyDict;
   for(int32_t i = 0; i < nSubTri.rows(); i++)
@@ -147,7 +147,7 @@ std::tuple<SparseMatrixF, std::vector<int32_t>> HSmoothMain::graphLaplacian(cons
 
 //============================================================================================
 
-MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, uint64_t iterations)
+HierarchicalSmooth::MeshNode HierarchicalSmooth::smooth(const MeshNode& nodes, Type type, float threshold, uint64_t iterations)
 {
   SparseMatrixF L = laplacian2D(nodes.rows(), type);
   std::vector<int32_t> vidx;
@@ -161,15 +161,15 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, 
     vidx = std::vector<int32_t>{};
   }
 
-  MatIndex nFixed = HSmoothBase::getIndex(vidx);
+  MatIndex nFixed = HierarchicalSmooth::getIndex(vidx);
   return smooth(nodes, nFixed, L, threshold, iterations);
 }
 
 //============================================================================================
 
-MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold, uint64_t iterations)
+HierarchicalSmooth::MeshNode HierarchicalSmooth::smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold, uint64_t iterations)
 {
-  MatIndex nMobile = HSmoothBase::getComplement(nFixed, GL.cols());
+  MatIndex nMobile = HierarchicalSmooth::getComplement(nFixed, GL.cols());
   if(nMobile.size() == 0)
   {
     return nodes;
@@ -229,15 +229,16 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
 
 //============================================================================================
 
-std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::getDirichletBVP(const SparseMatrixF& GL, const SparseMatrixF& y, const MatIndex& nFixed, const MatIndex& nMobile)
+std::tuple<HierarchicalSmooth::SparseMatrixF, HierarchicalSmooth::SparseMatrixF> HierarchicalSmooth::getDirichletBVP(const SparseMatrixF& GL, const SparseMatrixF& y, const MatIndex& nFixed,
+                                                                                                                     const MatIndex& nMobile)
 {
-  MatIndex nAll = HSmoothBase::matUnion(nFixed, nMobile);
+  MatIndex nAll = HierarchicalSmooth::matUnion(nFixed, nMobile);
   std::vector<int32_t> v;
   for(int32_t i = 0; i < y.cols(); i++)
   {
     v.push_back(i);
   }
-  MatIndex dims = HSmoothBase::getIndex(v);
+  MatIndex dims = HierarchicalSmooth::getIndex(v);
 
   SparseMatrixF GLRed(nMobile.size(), nMobile.size());
   SparseMatrixF sm1(nAll.size(), nFixed.size());
@@ -256,7 +257,7 @@ std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::getDirichletBVP(const Spar
 
 //============================================================================================
 
-std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::analyzeLaplacian(const SparseMatrixF& GL)
+std::tuple<HierarchicalSmooth::SparseMatrixF, HierarchicalSmooth::SparseMatrixF> HierarchicalSmooth::analyzeLaplacian(const SparseMatrixF& GL)
 {
   // NOTE: GL should be column-major
 
@@ -290,7 +291,7 @@ std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::analyzeLaplacian(const Spa
 
 //============================================================================================
 
-float HSmoothMain::getObjFn(Smoother& smth, float feps, const SparseMatrixF& fSmallEye, const SparseMatrixF& LTL, const SparseMatrixF& LTK, const SparseMatrixF& Data, const MatIndex& nMobile,
+float HierarchicalSmooth::getObjFn(Smoother& smth, float feps, const SparseMatrixF& fSmallEye, const SparseMatrixF& LTL, const SparseMatrixF& LTK, const SparseMatrixF& Data, const MatIndex& nMobile,
                             const SparseMatrixF& yMobile, const SparseMatrixF& D, const SparseMatrixF& AyIn, SparseMatrixF& yOut)
 {
   SparseMatrixF A = (1.0 - feps) * fSmallEye + feps * LTL;
@@ -299,7 +300,7 @@ float HSmoothMain::getObjFn(Smoother& smth, float feps, const SparseMatrixF& fSm
   smth.compute(A); // smth in general changes with each function call
   SparseMatrixF ySmooth = smth.solve(b);
 
-  HSmoothBase::merge(ySmooth, yOut, nMobile);
+  HierarchicalSmooth::merge(ySmooth, yOut, nMobile);
 
   Eigen::ArrayXXf yDeltaD = Eigen::MatrixXf(D * yOut + AyIn).array();
 

@@ -47,8 +47,8 @@
 
 namespace
 {
-constexpr size_t k_VolumeMeshDimY = 3;
-constexpr size_t k_SurfaceNodesDimY = 3;
+constexpr size_t k_TrianglesDimY = 3;
+constexpr size_t k_VerticesDimY = 3;
 constexpr size_t k_FaceLabelsDimY = 2;
 constexpr size_t k_NodeTypesDimY = 1;
 } // namespace
@@ -194,8 +194,8 @@ void HierarchicalSmoothing::dataCheck()
     return;
   }
 
-  const std::vector<size_t> trianglesComponentDims{k_VolumeMeshDimY};
-  const std::vector<size_t> verticesComponentDims{k_SurfaceNodesDimY};
+  const std::vector<size_t> trianglesComponentDims{k_TrianglesDimY};
+  const std::vector<size_t> verticesComponentDims{k_VerticesDimY};
 
   if(triangles->getComponentDimensions() == trianglesComponentDims)
   {
@@ -286,18 +286,22 @@ void HierarchicalSmoothing::execute()
     return;
   }
 
-  auto triangles = Eigen::Map<TriMesh>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY);
-  auto vertices = Eigen::Map<const MeshNode>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
-  auto faceLabels = Eigen::Map<const FaceLabel>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY);
-  auto nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY);
+  {
+    using namespace HierarchicalSmooth;
 
-  auto logFunc = [this](const std::string& message) { notifyStatusMessage(QString::fromStdString(message)); };
+    auto triangles = Eigen::Map<TriMesh>(triList->data(), triList->getNumberOfTuples(), k_TrianglesDimY);
+    auto vertices = Eigen::Map<const MeshNode>(vertexList->data(), vertexList->getNumberOfTuples(), k_VerticesDimY);
+    auto faceLabels = Eigen::Map<const FaceLabel>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY);
+    auto nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY);
 
-  auto smoothedVertices = Eigen::Map<MeshNode>(smoothedVertexList->data(), smoothedVertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
+    auto logFunc = [this](const std::string& message) { notifyStatusMessage(QString::fromStdString(message)); };
 
-  VolumeSolver::hierarchicalSmooth(triangles, vertices, faceLabels, nodeTypes, smoothedVertices, m_Threshold, m_Iterations, logFunc);
+    auto smoothedVertices = Eigen::Map<MeshNode>(smoothedVertexList->data(), smoothedVertexList->getNumberOfTuples(), k_VerticesDimY);
 
-  smoothedVertexList->copyIntoArray(vertexList);
+    hierarchicalSmooth(triangles, vertices, faceLabels, nodeTypes, smoothedVertices, m_Threshold, m_Iterations, logFunc);
+
+    smoothedVertexList->copyIntoArray(vertexList);
+  }
 }
 
 // -----------------------------------------------------------------------------

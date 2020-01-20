@@ -40,7 +40,7 @@
 
 #include "Types.h"
 
-namespace HSmoothBase
+namespace HierarchicalSmooth
 {
 
 /* ismember:

@@ -45,7 +45,7 @@
 
 #include "Types.h"
 
-namespace HSmoothTri
+namespace HierarchicalSmooth
 {
 
 struct EdgeCount

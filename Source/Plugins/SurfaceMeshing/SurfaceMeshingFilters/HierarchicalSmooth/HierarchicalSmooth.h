@@ -41,7 +41,7 @@
 
 #include "Types.h"
 
-namespace HSmoothMain
+namespace HierarchicalSmooth
 {
 
 enum class Type

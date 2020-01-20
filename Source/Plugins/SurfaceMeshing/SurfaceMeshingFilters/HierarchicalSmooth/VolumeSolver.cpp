@@ -32,7 +32,7 @@
 
 /*
  * VolumcSolver.cpp:
- * Defines classes and routines declared in VolumeSolver.h
+ * Defines classes and routines declared in HierarchicalSmooth.h
  */
 
 #include "VolumeSolver.h"
@@ -44,23 +44,19 @@
 #include "Slice.h"
 #include "Triangulation.h"
 
-namespace base = HSmoothBase;
-namespace smooth = HSmoothMain;
-namespace tri = HSmoothTri;
-
 namespace
 {
-const MatIndex k_One = base::getIndex({0});
-const MatIndex k_Three = base::getIndex({0, 1, 2});
+const HierarchicalSmooth::MatIndex k_One = HierarchicalSmooth::getIndex({0});
+const HierarchicalSmooth::MatIndex k_Three = HierarchicalSmooth::getIndex({0, 1, 2});
 
-TriMesh sliceMesh(const Eigen::Ref<const TriMesh>& mesh, const std::vector<int>& patches)
+HierarchicalSmooth::TriMesh sliceMesh(const Eigen::Ref<const HierarchicalSmooth::TriMesh>& mesh, const std::vector<int>& patches)
 {
-  TriMesh triSub;
-  slice::slice(mesh, base::getIndex(patches), k_Three, triSub);
+  HierarchicalSmooth::TriMesh triSub;
+  slice::slice(mesh, HierarchicalSmooth::getIndex(patches), k_Three, triSub);
   return triSub;
 }
 
-void markSectionAsComplete(IsSmoothed& status, const MatIndex& idx)
+void markSectionAsComplete(HierarchicalSmooth::IsSmoothed& status, const HierarchicalSmooth::MatIndex& idx)
 {
   for(Eigen::Index i = 0; i < idx.size(); i++)
   {
@@ -70,7 +66,7 @@ void markSectionAsComplete(IsSmoothed& status, const MatIndex& idx)
 
 } // namespace
 
-void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eigen::Ref<const MeshNode>& surfaceNodes, const Eigen::Ref<const FaceLabel>& faceLabels,
+void HierarchicalSmooth::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eigen::Ref<const MeshNode>& surfaceNodes, const Eigen::Ref<const FaceLabel>& faceLabels,
                                       const Eigen::Ref<const NodeType>& nodeTypes, Eigen::Ref<MeshNode> smoothedNodes, float threshold, uint64_t iterations, LogCallback logFunction)
 {
   DictBase<std::vector<int>>::EdgeDict boundaryDict;
@@ -121,7 +117,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
   for(auto iter = boundaryDict.cbegin(); iter != boundaryDict.cend(); iter++)
   {
     TriMesh triSub = sliceMesh(volumeMesh, iter->second);
-    tri::Triangulation triangulation(triSub);
+    HierarchicalSmooth::Triangulation triangulation(triSub);
 
     std::tuple<SparseMatrixF, MatIndex> topology = triangulation.graphLaplacian();
     SparseMatrixF GL = std::get<0>(topology);
@@ -154,11 +150,11 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
           vtemp.push_back(std::get<0>(freeBoundry[count]));
         }
 
-        MatIndex thisFreeBoundaryIdx = base::getIndex(vtemp);
+        MatIndex thisFreeBoundaryIdx = HierarchicalSmooth::getIndex(vtemp);
         MeshNode thisFreeBoundary;
         slice::slice(smoothedNodes, thisFreeBoundaryIdx, k_Three, thisFreeBoundary);
-        MeshNode thisFreeBoundarySmooth = smooth::smooth(thisFreeBoundary, smooth::Type::Cyclic, threshold, iterations);
-        base::merge(thisFreeBoundarySmooth, smoothedNodes, thisFreeBoundaryIdx);
+        MeshNode thisFreeBoundarySmooth = HierarchicalSmooth::smooth(thisFreeBoundary, HierarchicalSmooth::Type::Cyclic, threshold, iterations);
+        HierarchicalSmooth::merge(thisFreeBoundarySmooth, smoothedNodes, thisFreeBoundaryIdx);
         markSectionAsComplete(status, thisFreeBoundaryIdx);
       }
       else
@@ -173,15 +169,15 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
           if(nodeTypes(std::get<0>(freeBoundry[effective_j])) % 10 == 4)
           {
             // reached terminal quad point
-            MatIndex thisTripleLineIndex = base::getIndex(vtemp);
+            MatIndex thisTripleLineIndex = HierarchicalSmooth::getIndex(vtemp);
             IsSmoothed thisStatus;
             slice::slice(status, thisTripleLineIndex, k_One, thisStatus);
             if(!thisStatus.all())
             {
               MeshNode thisTripleLine, thisTripleLineSmoothed;
               slice::slice(smoothedNodes, thisTripleLineIndex, k_Three, thisTripleLine);
-              thisTripleLineSmoothed = smooth::smooth(thisTripleLine, smooth::Type::Serial, threshold, iterations);
-              base::merge(thisTripleLineSmoothed, smoothedNodes, thisTripleLineIndex); /* HAVEN'T CHECKED FOR BUGS */
+              thisTripleLineSmoothed = HierarchicalSmooth::smooth(thisTripleLine, HierarchicalSmooth::Type::Serial, threshold, iterations);
+              HierarchicalSmooth::merge(thisTripleLineSmoothed, smoothedNodes, thisTripleLineIndex); /* HAVEN'T CHECKED FOR BUGS */
               markSectionAsComplete(status, thisTripleLineIndex);
             }
             vtemp.clear();
@@ -198,9 +194,9 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
     {
       fixed.push_back(std::get<0>(freeBoundry[i]));
     }
-    MatIndex nFixed = base::getIndex(fixed, nUniq);
-    MeshNode BoundaryNodeSmooth = smooth::smooth(boundaryNode, nFixed, GL, threshold, iterations);
-    base::merge(BoundaryNodeSmooth, smoothedNodes, nUniq);
+    MatIndex nFixed = HierarchicalSmooth::getIndex(fixed, nUniq);
+    MeshNode BoundaryNodeSmooth = HierarchicalSmooth::smooth(boundaryNode, nFixed, GL, threshold, iterations);
+    HierarchicalSmooth::merge(BoundaryNodeSmooth, smoothedNodes, nUniq);
     markSectionAsComplete(status, nUniq);
     // Done. Get out.
   }

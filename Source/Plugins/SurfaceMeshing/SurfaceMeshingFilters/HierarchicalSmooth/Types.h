@@ -46,6 +46,8 @@
 #include "Eigen/Sparse"
 #include "Eigen/IterativeLinearSolvers"
 
+namespace HierarchicalSmooth
+{
 /*
  * TriMesh:
  * Eigen array of integer triplets; the prototype of Delaunay
@@ -66,7 +68,7 @@ using MeshNode = Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>;
  * and represents a grain boundary patch by specifying the
  * grain IDs on either side of the patch.
  */
-using FaceLabel = Eigen::Array<int32_t, Eigen::Dynamic, 2, Eigen::RowMajor> ;
+using FaceLabel = Eigen::Array<int32_t, Eigen::Dynamic, 2, Eigen::RowMajor>;
 
 /*
  * NodeType:
@@ -115,21 +117,6 @@ struct EdgePairEqual
 };
 
 /*
- * The actual hash function
- */
-namespace std
-{
-template <>
-struct hash<EdgePair>
-{
-  std::size_t operator()(const EdgePair& EP) const
-  {
-    return std::hash<std::size_t>{}(static_cast<std::size_t>(EP.first) << (sizeof(std::size_t) * 4) | static_cast<std::size_t>(EP.second));
-  }
-};
-} // namespace std
-
-/*
  * Customized dictionary that takes EdgePairs as keys.
  */
 template <typename T>
@@ -170,3 +157,20 @@ using TripletB = Eigen::Triplet<bool>;
  * Typedef for the conjugate gradient solver for sparse systems.
  */
 using Smoother = Eigen::ConjugateGradient<SparseMatrixF, Eigen::Upper | Eigen::Lower>;
+
+} // namespace HierarchicalSmooth
+
+/*
+ * The actual hash function
+ */
+namespace std
+{
+template <>
+struct hash<HierarchicalSmooth::EdgePair>
+{
+  std::size_t operator()(const HierarchicalSmooth::EdgePair& EP) const
+  {
+    return std::hash<std::size_t>{}(static_cast<std::size_t>(EP.first) << (sizeof(std::size_t) * 4) | static_cast<std::size_t>(EP.second));
+  }
+};
+} // namespace std

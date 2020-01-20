@@ -38,11 +38,9 @@
 
 #include "Base.h"
 
-// int is the same as unsigned long
-
 //============================================================================================
 
-TriMesh HSmoothBase::isMember(const TriMesh& array1, const std::vector<int32_t>& array2)
+HierarchicalSmooth::TriMesh HierarchicalSmooth::isMember(const TriMesh& array1, const std::vector<int32_t>& array2)
 {
   std::unordered_map<int32_t, int32_t> MyDict; // dictionary lookup for faster access
   for(int32_t i = 0; i < array2.size(); i++)
@@ -63,7 +61,7 @@ TriMesh HSmoothBase::isMember(const TriMesh& array1, const std::vector<int32_t>&
 
 //============================================================================================
 
-MatIndex HSmoothBase::getIndex(const std::vector<int32_t>& inputVec)
+HierarchicalSmooth::MatIndex HierarchicalSmooth::getIndex(const std::vector<int32_t>& inputVec)
 {
   MatIndex I(inputVec.size());
   for(size_t i = 0; i < inputVec.size(); i++)
@@ -76,7 +74,7 @@ MatIndex HSmoothBase::getIndex(const std::vector<int32_t>& inputVec)
 
 //============================================================================================
 
-MatIndex HSmoothBase::getIndex(const std::vector<int32_t>& inputVec, const MatIndex& matIndex)
+HierarchicalSmooth::MatIndex HierarchicalSmooth::getIndex(const std::vector<int32_t>& inputVec, const MatIndex& matIndex)
 {
   std::unordered_map<int32_t, int32_t> dict;
   for(int32_t i = 0; i < matIndex.rows(); i++)
@@ -94,7 +92,7 @@ MatIndex HSmoothBase::getIndex(const std::vector<int32_t>& inputVec, const MatIn
 
 //============================================================================================
 
-MatIndex HSmoothBase::getComplement(const MatIndex& nSet, int32_t N)
+HierarchicalSmooth::MatIndex HierarchicalSmooth::getComplement(const MatIndex& nSet, int32_t N)
 {
   MatIndex nAll = -1 * MatIndex::Ones(N, 1);
   for(Eigen::Index i = 0; i < nSet.size(); i++)
@@ -115,7 +113,7 @@ MatIndex HSmoothBase::getComplement(const MatIndex& nSet, int32_t N)
 
 //============================================================================================
 
-MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
+HierarchicalSmooth::MatIndex HierarchicalSmooth::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 {
   std::vector<int32_t> v;
   for(Eigen::Index i = 0; i < mat1.size(); i++)
@@ -134,7 +132,7 @@ MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 
 //============================================================================================
 
-void HSmoothBase::merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<MeshNode> target, const MatIndex& locations)
+void HierarchicalSmooth::merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<MeshNode> target, const MatIndex& locations)
 {
   for(Eigen::Index i = 0; i < source.rows(); i++)
   {
@@ -144,7 +142,7 @@ void HSmoothBase::merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<Mes
 
 //============================================================================================
 
-void HSmoothBase::merge(const SparseMatrixF& source, SparseMatrixF& target, const MatIndex& locations)
+void HierarchicalSmooth::merge(const SparseMatrixF& source, SparseMatrixF& target, const MatIndex& locations)
 {
   MeshNode src = Eigen::MatrixXf(source);
   MeshNode trg = Eigen::MatrixXf(target);

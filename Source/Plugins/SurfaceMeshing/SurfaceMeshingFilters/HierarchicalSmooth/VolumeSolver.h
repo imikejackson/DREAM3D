@@ -44,7 +44,7 @@
 
 #include "Types.h"
 
-namespace VolumeSolver
+namespace HierarchicalSmooth
 {
 using LogCallback = std::function<void(const std::string&)>;
 
