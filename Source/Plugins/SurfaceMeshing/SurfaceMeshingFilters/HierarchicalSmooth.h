@@ -50,11 +50,9 @@ class SurfaceMeshing_EXPORT HierarchicalSmooth : public AbstractFilter
   PYB11_SHARED_POINTERS(HierarchicalSmooth)
   PYB11_STATIC_NEW_MACRO(HierarchicalSmooth)
   PYB11_PROPERTY(uint64_t Iterations READ getIterations WRITE setIterations)
-  PYB11_PROPERTY(DataArrayPath TriListPath READ getTriListPath WRITE setTriListPath)
-  PYB11_PROPERTY(DataArrayPath VertexListPath READ getVertexListPath WRITE setVertexListPath)
+  PYB11_PROPERTY(DataArrayPath DataContainerPath READ getDataContainerPath WRITE setDataContainerPath)
   PYB11_PROPERTY(DataArrayPath FaceLabelsPath READ getFaceLabelsPath WRITE setFaceLabelsPath)
   PYB11_PROPERTY(DataArrayPath NodeTypesPath READ getNodeTypesPath WRITE setNodeTypesPath)
-  PYB11_PROPERTY(QString SmoothedVertexArrayName READ getSmoothedVertexArrayName WRITE setSmoothedVertexArrayName)
 #endif
 
 public:
@@ -95,32 +93,18 @@ public:
   Q_PROPERTY(uint64_t Iterations READ getIterations WRITE setIterations)
 
   /**
-   * @brief Getter property for TriListPath
+   * @brief Getter property for DataContainerPath
    * @return
    */
-  DataArrayPath getTriListPath() const;
+  DataArrayPath getDataContainerPath() const;
 
   /**
-   * @brief Setter property for TriListPath
+   * @brief Setter property for DataContainerPath
    * @param value
    */
-  void setTriListPath(const DataArrayPath& value);
+  void setDataContainerPath(const DataArrayPath& value);
 
-  Q_PROPERTY(DataArrayPath TriListPath READ getTriListPath WRITE setTriListPath)
-
-  /**
-   * @brief Getter property for VertexListPath
-   * @return
-   */
-  DataArrayPath getVertexListPath() const;
-
-  /**
-   * @brief Setter property for VertexListPath
-   * @param value
-   */
-  void setVertexListPath(const DataArrayPath& value);
-
-  Q_PROPERTY(DataArrayPath VertexListPath READ getVertexListPath WRITE setVertexListPath)
+  Q_PROPERTY(DataArrayPath DataContainerPath READ getDataContainerPath WRITE setDataContainerPath)
 
   /**
    * @brief Getter property for FaceLabelsPath
@@ -149,20 +133,6 @@ public:
   void setNodeTypesPath(const DataArrayPath& value);
 
   Q_PROPERTY(DataArrayPath NodeTypesPath READ getNodeTypesPath WRITE setNodeTypesPath)
-
-  /**
-   * @brief Getter property for SmoothedVertexArrayName
-   * @return
-   */
-  QString getSmoothedVertexArrayName() const;
-
-  /**
-   * @brief Setter property for SmoothedVertexArrayName
-   * @param value
-   */
-  void setSmoothedVertexArrayName(const QString& value);
-
-  Q_PROPERTY(QString SmoothedVertexArrayName READ getSmoothedVertexArrayName WRITE setSmoothedVertexArrayName)
 
   /**
    * @brief getCompiledLibraryName Reimplemented from @see AbstractFilter class
@@ -274,12 +244,10 @@ private:
 
   uint64_t m_Iterations;
 
-  DataArrayPath m_TriListPath;
-  DataArrayPath m_VertexListPath;
+  DataArrayPath m_DataContainerPath;
+
   DataArrayPath m_FaceLabelsPath;
   DataArrayPath m_NodeTypesPath;
-
-  QString m_SmoothedVertexArrayName;
 
 public:
   HierarchicalSmooth(const HierarchicalSmooth&) = delete;            // Copy Constructor Not Implemented
