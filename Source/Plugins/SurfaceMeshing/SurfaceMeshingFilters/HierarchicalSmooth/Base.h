@@ -54,15 +54,15 @@ TriMesh isMember(const TriMesh& array1, const std::vector<int>& array2);
  * STL std::vector< int > object. Variant returns position of each integer
  * with respect to a user-supplied MatIndex.
  */
-MatIndex getIndex(const std::vector<int>& inputVec);
-MatIndex getIndex(const std::vector<int>& inputVec, const MatIndex& matIndex);
+MatIndex getIndex(const std::vector<int32_t>& inputVec);
+MatIndex getIndex(const std::vector<int32_t>& inputVec, const MatIndex& matIndex);
 
 /* getcomplement:
  * Given a MatIndex M and an integer N > max( M ), returns a MatIndex containing
  * { integer i | i < N and i not in M }. Used to find indices of mobile nodes
  * given the foxed ones and vice versa.
  */
-MatIndex getComplement(const MatIndex& nSet, int N);
+MatIndex getComplement(const MatIndex& nSet, int32_t N);
 
 /* matunion:
  * Returns the set union of the indexes in the two input MatIndexes,

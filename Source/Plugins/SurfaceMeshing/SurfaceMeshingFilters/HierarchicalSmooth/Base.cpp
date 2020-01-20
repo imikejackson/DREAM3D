@@ -42,19 +42,19 @@
 
 //============================================================================================
 
-TriMesh HSmoothBase::isMember(const TriMesh& array1, const std::vector<int>& array2)
+TriMesh HSmoothBase::isMember(const TriMesh& array1, const std::vector<int32_t>& array2)
 {
-  std::unordered_map<int, int> MyDict; // dictionary lookup for faster access
-  for(int i = 0; i < array2.size(); i++)
+  std::unordered_map<int32_t, int32_t> MyDict; // dictionary lookup for faster access
+  for(int32_t i = 0; i < array2.size(); i++)
   {
     MyDict.insert({array2[i], i});
   }
   TriMesh NewTri = TriMesh::Zero(array1.rows(), array1.cols());
-  for(int row = 0; row < array1.rows(); row++)
+  for(Eigen::Index row = 0; row < array1.rows(); row++)
   {
-    for(int col = 0; col < array1.cols(); col++)
+    for(Eigen::Index col = 0; col < array1.cols(); col++)
     {
-      std::unordered_map<int, int>::const_iterator got = MyDict.find(array1(row, col));
+      std::unordered_map<int32_t, int32_t>::const_iterator got = MyDict.find(array1(row, col));
       NewTri(row, col) = got->second;
     }
   }
@@ -63,10 +63,10 @@ TriMesh HSmoothBase::isMember(const TriMesh& array1, const std::vector<int>& arr
 
 //============================================================================================
 
-MatIndex HSmoothBase::getIndex(const std::vector<int>& inputVec)
+MatIndex HSmoothBase::getIndex(const std::vector<int32_t>& inputVec)
 {
   MatIndex I(inputVec.size());
-  for(int i = 0; i < inputVec.size(); i++)
+  for(size_t i = 0; i < inputVec.size(); i++)
   {
     I(i) = inputVec[i];
   }
@@ -76,17 +76,17 @@ MatIndex HSmoothBase::getIndex(const std::vector<int>& inputVec)
 
 //============================================================================================
 
-MatIndex HSmoothBase::getIndex(const std::vector<int>& inputVec, const MatIndex& matIndex)
+MatIndex HSmoothBase::getIndex(const std::vector<int32_t>& inputVec, const MatIndex& matIndex)
 {
-  std::unordered_map<int, int> dict;
-  for(int i = 0; i < matIndex.rows(); i++)
+  std::unordered_map<int32_t, int32_t> dict;
+  for(int32_t i = 0; i < matIndex.rows(); i++)
   {
     dict.insert({matIndex(i), i});
   }
-  std::vector<int> vtemp;
-  for(int i = 0; i < inputVec.size(); i++)
+  std::vector<int32_t> vtemp;
+  for(size_t i = 0; i < inputVec.size(); i++)
   {
-    std::unordered_map<int, int>::iterator got = dict.find(inputVec[i]);
+    std::unordered_map<int32_t, int32_t>::iterator got = dict.find(inputVec[i]);
     vtemp.push_back(got->second);
   }
   return getIndex(vtemp);
@@ -94,15 +94,15 @@ MatIndex HSmoothBase::getIndex(const std::vector<int>& inputVec, const MatIndex&
 
 //============================================================================================
 
-MatIndex HSmoothBase::getComplement(const MatIndex& nSet, int N)
+MatIndex HSmoothBase::getComplement(const MatIndex& nSet, int32_t N)
 {
   MatIndex nAll = -1 * MatIndex::Ones(N, 1);
-  for(int i = 0; i < nSet.size(); i++)
+  for(Eigen::Index i = 0; i < nSet.size(); i++)
   {
     nAll(nSet(i)) = nSet(i);
   }
-  std::vector<int> nComplement;
-  for(int i = 0; i < nAll.size(); i++)
+  std::vector<int32_t> nComplement;
+  for(int32_t i = 0; i < nAll.size(); i++)
   {
     if(nAll(i) < 0)
     {
@@ -117,12 +117,12 @@ MatIndex HSmoothBase::getComplement(const MatIndex& nSet, int N)
 
 MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 {
-  std::vector<int> v;
-  for(int i = 0; i < mat1.size(); i++)
+  std::vector<int32_t> v;
+  for(Eigen::Index i = 0; i < mat1.size(); i++)
   {
     v.push_back(mat1(i));
   }
-  for(int i = 0; i < mat2.size(); i++)
+  for(Eigen::Index i = 0; i < mat2.size(); i++)
   {
     v.push_back(mat2(i));
   }
@@ -136,7 +136,7 @@ MatIndex HSmoothBase::matUnion(const MatIndex& mat1, const MatIndex& mat2)
 
 void HSmoothBase::merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<MeshNode> target, const MatIndex& locations)
 {
-  for(int i = 0; i < source.rows(); i++)
+  for(Eigen::Index i = 0; i < source.rows(); i++)
   {
     target.row(locations(i)) << source.row(i);
   }
