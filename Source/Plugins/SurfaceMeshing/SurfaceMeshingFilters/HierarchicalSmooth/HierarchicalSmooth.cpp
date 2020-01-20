@@ -47,21 +47,21 @@
 
 //============================================================================================
 
-SparseMatrixD HSmoothMain::laplacian2D(int N, Type type)
+SparseMatrixF HSmoothMain::laplacian2D(int N, Type type)
 {
-  std::vector<TripletD> tripletList;
+  std::vector<TripletF> tripletList;
   tripletList.reserve(3 * N); // approx. number of nonzero elements
   for(int i = 0; i < N; i++)
   {
-    tripletList.push_back(TripletD(i, i, -1.0f));
+    tripletList.push_back(TripletF(i, i, -1.0f));
     if(i != N - 1)
     {
-      tripletList.push_back(TripletD(i, i + 1, 1.0f));
+      tripletList.push_back(TripletF(i, i + 1, 1.0f));
     }
   }
-  SparseMatrixD temp(N, N);
+  SparseMatrixF temp(N, N);
   temp.setFromTriplets(tripletList.cbegin(), tripletList.cend());
-  SparseMatrixD L = SparseMatrixD(temp.transpose()) * temp;
+  SparseMatrixF L = SparseMatrixF(temp.transpose()) * temp;
 
   switch(type)
   {
@@ -86,7 +86,7 @@ SparseMatrixD HSmoothMain::laplacian2D(int N, Type type)
 
 //============================================================================================
 
-std::tuple<SparseMatrixD, std::vector<int>> HSmoothMain::graphLaplacian(const TriMesh& tri)
+std::tuple<SparseMatrixF, std::vector<int>> HSmoothMain::graphLaplacian(const TriMesh& tri)
 {
   std::vector<int> nUnique;
   for(int i = 0; i < tri.rows(); i++)
@@ -100,7 +100,7 @@ std::tuple<SparseMatrixD, std::vector<int>> HSmoothMain::graphLaplacian(const Tr
   std::sort(nUnique.begin(), nUnique.end());
   nUnique.erase(std::unique(nUnique.begin(), nUnique.end()), nUnique.end());
 
-  std::vector<TripletD> tripletList;
+  std::vector<TripletF> tripletList;
   tripletList.reserve(nUnique.size() + tri.rows() * tri.cols() * 2);
 
   std::vector<float> fDiagCount(nUnique.size(), 0.0f);
@@ -122,8 +122,8 @@ std::tuple<SparseMatrixD, std::vector<int>> HSmoothMain::graphLaplacian(const Tr
       {
         // not found yet...
         MyDict.insert({EP, i}); // i.e. the edge, and one of the triangles it belongs to.
-        tripletList.push_back(TripletD(this_row, this_col, -1.0));
-        tripletList.push_back(TripletD(this_col, this_row, -1.0));
+        tripletList.push_back(TripletF(this_row, this_col, -1.0));
+        tripletList.push_back(TripletF(this_col, this_row, -1.0));
         fDiagCount[this_row] += 1.0f;
         fDiagCount[this_col] += 1.0f;
       }
@@ -132,10 +132,10 @@ std::tuple<SparseMatrixD, std::vector<int>> HSmoothMain::graphLaplacian(const Tr
 
   for(int i = 0; i < fDiagCount.size(); i++)
   {
-    tripletList.push_back(TripletD(i, i, fDiagCount[i]));
+    tripletList.push_back(TripletF(i, i, fDiagCount[i]));
   }
 
-  SparseMatrixD MLap(nUnique.size(), nUnique.size());
+  SparseMatrixF MLap(nUnique.size(), nUnique.size());
   MLap.setFromTriplets(tripletList.begin(), tripletList.end());
   MLap.makeCompressed();
   return std::make_tuple(MLap, nUnique);
@@ -145,7 +145,7 @@ std::tuple<SparseMatrixD, std::vector<int>> HSmoothMain::graphLaplacian(const Tr
 
 MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, int iterations)
 {
-  SparseMatrixD L = laplacian2D(nodes.rows(), type);
+  SparseMatrixF L = laplacian2D(nodes.rows(), type);
   std::vector<int> vidx;
 
   if(type == Type::Serial)
@@ -163,7 +163,7 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, Type type, float threshold, 
 
 //============================================================================================
 
-MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixD& GL, float threshold, int iterations)
+MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, const SparseMatrixF& GL, float threshold, int iterations)
 {
   MatIndex nMobile = HSmoothBase::getComplement(nFixed, GL.cols());
   if(nMobile.size() == 0)
@@ -171,15 +171,15 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
     return nodes;
   }
 
-  SparseMatrixD Data = nodes.sparseView();
+  SparseMatrixF Data = nodes.sparseView();
 
-  SparseMatrixD GLRed, fConst, D, A, AyIn, yMobile, fSmallEye, LTL, LTK, yOut;
+  SparseMatrixF GLRed, fConst, D, A, AyIn, yMobile, fSmallEye, LTL, LTK, yOut;
 
-  std::tuple<SparseMatrixD, SparseMatrixD> dbvp = getDirichletBVP(GL, Data, nFixed, nMobile);
+  std::tuple<SparseMatrixF, SparseMatrixF> dbvp = getDirichletBVP(GL, Data, nFixed, nMobile);
   GLRed = std::get<0>(dbvp);
   fConst = std::get<1>(dbvp);
 
-  std::tuple<SparseMatrixD, SparseMatrixD> pieces = analyzeLaplacian(GL);
+  std::tuple<SparseMatrixF, SparseMatrixF> pieces = analyzeLaplacian(GL);
   D = std::get<0>(pieces);
   A = std::get<1>(pieces);
 
@@ -189,8 +189,8 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
   fSmallEye = mtemp.sparseView();
   fSmallEye.makeCompressed();
   slice::slice(Data, nMobile, 1, yMobile);
-  LTL = SparseMatrixD(GLRed.transpose() * GLRed);
-  LTK = SparseMatrixD(GLRed.transpose() * fConst); // casting as SparseMatrixD to make column-major
+  LTL = SparseMatrixF(GLRed.transpose() * GLRed);
+  LTK = SparseMatrixF(GLRed.transpose() * fConst); // casting as SparseMatrixF to make column-major
   yOut = Data;
 
   Smoother smth;
@@ -227,7 +227,7 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
 
 //============================================================================================
 
-std::tuple<SparseMatrixD, SparseMatrixD> HSmoothMain::getDirichletBVP(const SparseMatrixD& GL, const SparseMatrixD& y, const MatIndex& nFixed, const MatIndex& nMobile)
+std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::getDirichletBVP(const SparseMatrixF& GL, const SparseMatrixF& y, const MatIndex& nFixed, const MatIndex& nMobile)
 {
   MatIndex nAll = HSmoothBase::matUnion(nFixed, nMobile);
   std::vector<int> v;
@@ -237,7 +237,7 @@ std::tuple<SparseMatrixD, SparseMatrixD> HSmoothMain::getDirichletBVP(const Spar
   }
   MatIndex dims = HSmoothBase::getIndex(v);
 
-  SparseMatrixD GLRed(nMobile.size(), nMobile.size()), sm1(nAll.size(), nFixed.size()), sm2(nFixed.size(), dims.size()), sm3(nAll.size(), dims.size()), fConst(nMobile.size(), dims.size());
+  SparseMatrixF GLRed(nMobile.size(), nMobile.size()), sm1(nAll.size(), nFixed.size()), sm2(nFixed.size(), dims.size()), sm3(nAll.size(), dims.size()), fConst(nMobile.size(), dims.size());
 
   slice::slice(GL, nMobile, nMobile, GLRed); // thank goodness for igl::slice!
   slice::slice(GL, nAll, nFixed, sm1);
@@ -250,24 +250,24 @@ std::tuple<SparseMatrixD, SparseMatrixD> HSmoothMain::getDirichletBVP(const Spar
 
 //============================================================================================
 
-std::tuple<SparseMatrixD, SparseMatrixD> HSmoothMain::analyzeLaplacian(const SparseMatrixD& GL)
+std::tuple<SparseMatrixF, SparseMatrixF> HSmoothMain::analyzeLaplacian(const SparseMatrixF& GL)
 {
   // NOTE: GL should be column-major
 
-  SparseMatrixD D(GL.rows(), GL.cols()), A(GL.rows(), GL.cols());
-  std::vector<TripletD> DT, AT;
+  SparseMatrixF D(GL.rows(), GL.cols()), A(GL.rows(), GL.cols());
+  std::vector<TripletF> DT, AT;
 
   for(int k = 0; k < GL.outerSize(); ++k)
   {
-    for(SparseMatrixD::InnerIterator it(GL, k); it; ++it)
+    for(SparseMatrixF::InnerIterator it(GL, k); it; ++it)
     {
       if(it.value() < -0.5)
       {
-        AT.push_back(TripletD(it.row(), it.col(), it.value()));
+        AT.push_back(TripletF(it.row(), it.col(), it.value()));
       }
       else if(it.value() > 0.5)
       {
-        DT.push_back(TripletD(it.row(), it.col(), it.value()));
+        DT.push_back(TripletF(it.row(), it.col(), it.value()));
       }
     }
   }
@@ -282,13 +282,13 @@ std::tuple<SparseMatrixD, SparseMatrixD> HSmoothMain::analyzeLaplacian(const Spa
 
 //============================================================================================
 
-float HSmoothMain::getObjFn(Smoother& smth, float feps, const SparseMatrixD& fSmallEye, const SparseMatrixD& LTL, const SparseMatrixD& LTK, const SparseMatrixD& Data, const MatIndex& nMobile,
-                            const SparseMatrixD& yMobile, const SparseMatrixD& D, const SparseMatrixD& AyIn, SparseMatrixD& yOut)
+float HSmoothMain::getObjFn(Smoother& smth, float feps, const SparseMatrixF& fSmallEye, const SparseMatrixF& LTL, const SparseMatrixF& LTK, const SparseMatrixF& Data, const MatIndex& nMobile,
+                            const SparseMatrixF& yMobile, const SparseMatrixF& D, const SparseMatrixF& AyIn, SparseMatrixF& yOut)
 {
-  SparseMatrixD ySmooth;
+  SparseMatrixF ySmooth;
 
-  SparseMatrixD A = (1.0 - feps) * fSmallEye + feps * LTL;
-  SparseMatrixD b = (1.0 - feps) * yMobile - feps * LTK;
+  SparseMatrixF A = (1.0 - feps) * fSmallEye + feps * LTL;
+  SparseMatrixF b = (1.0 - feps) * yMobile - feps * LTK;
 
   smth.compute(A); // smth in general changes with each function call
   ySmooth = smth.solve(b);

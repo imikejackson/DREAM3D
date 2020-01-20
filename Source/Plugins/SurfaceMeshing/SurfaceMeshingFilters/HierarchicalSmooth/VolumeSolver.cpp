@@ -123,8 +123,8 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
     TriMesh triSub = sliceMesh(volumeMesh, iter->second);
     tri::Triangulation triangulation(triSub);
 
-    std::tuple<SparseMatrixD, MatIndex> topology = triangulation.graphLaplacian();
-    SparseMatrixD GL = std::get<0>(topology);
+    std::tuple<SparseMatrixF, MatIndex> topology = triangulation.graphLaplacian();
+    SparseMatrixF GL = std::get<0>(topology);
     MatIndex nUniq = std::get<1>(topology);
 
     std::tuple<EdgeList, EdgeList> freeBoundryData = triangulation.freeBoundary();

@@ -76,6 +76,6 @@ MatIndex matUnion(const MatIndex& mat1, const MatIndex& mat2);
  * as elements in the MatIndex. Two versions are provided, for sparse and dense.
  */
 void merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<MeshNode> target, const MatIndex& locations);
-void merge(const SparseMatrixD& source, SparseMatrixD& target, const MatIndex& locations);
+void merge(const SparseMatrixF& source, SparseMatrixF& target, const MatIndex& locations);
 
 } // namespace HSmoothBase

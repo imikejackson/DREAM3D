@@ -36,6 +36,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <unordered_map>
 #include <vector>
@@ -71,7 +72,7 @@ using MeshNode = Eigen::Matrix<float, Eigen::Dynamic, 3, Eigen::RowMajor>;
  * and represents a grain boundary patch by specifying the
  * grain IDs on either side of the patch.
  */
-using FaceLabel = Eigen::Array<int, Eigen::Dynamic, 2, Eigen::RowMajor> ;
+using FaceLabel = Eigen::Array<int32_t, Eigen::Dynamic, 2, Eigen::RowMajor> ;
 
 /*
  * NodeType:
@@ -80,7 +81,7 @@ using FaceLabel = Eigen::Array<int, Eigen::Dynamic, 2, Eigen::RowMajor> ;
  * ( denoted by 2, 3, 4 respectively if on the interior and
  * 12, 13, 14 if on the volume surface.
  */
-using NodeType = Eigen::Array<int, Eigen::Dynamic, 1>;
+using NodeType = Eigen::Array<int32_t, Eigen::Dynamic, 1>;
 
 /*
  * IsSmoothed:
@@ -151,27 +152,27 @@ struct DictBase
  */
 
 /*
- * SparseMatrixD:
+ * SparseMatrixF:
  * Shorthand for Eigen's sparse matrix type.
  *
- * TripletD:
+ * TripletF:
  * Triplet containing a position indices for
  * a single sparse matrix element (i, j ) and
  * the floating point value at that position.
  * Defined in Eigen/Sparse
  *
  * SparseMatrixB:
- * Boolean mask for type SparseMatrixD
+ * Boolean mask for type SparseMatrixF
  *
  * TripletB:
  * Equivalent of T for boolean variables.
  */
-using SparseMatrixD = Eigen::SparseMatrix<float>;
-using TripletD = Eigen::Triplet<float>;
+using SparseMatrixF = Eigen::SparseMatrix<float>;
+using TripletF = Eigen::Triplet<float>;
 using SparseMatrixB = Eigen::SparseMatrix<bool>;
 using TripletB = Eigen::Triplet<bool>;
 
 /*
  * Typedef for the conjugate gradient solver for sparse systems.
  */
-using Smoother = Eigen::ConjugateGradient<SparseMatrixD, Eigen::Upper | Eigen::Lower>;
+using Smoother = Eigen::ConjugateGradient<SparseMatrixF, Eigen::Upper | Eigen::Lower>;

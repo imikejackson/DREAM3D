@@ -194,22 +194,22 @@ EdgeList HSmoothTri::Triangulation::fastChainLinkSort(const EdgeList& list)
 
 //===================================================================================
 
-std::tuple<SparseMatrixD, MatIndex> HSmoothTri::Triangulation::graphLaplacian() const
+std::tuple<SparseMatrixF, MatIndex> HSmoothTri::Triangulation::graphLaplacian() const
 {
   // most of the work already done in method GetEdges
-  std::vector<TripletD> tripletList;
+  std::vector<TripletF> tripletList;
   tripletList.reserve(nUnique.size() + 2 * Mesh.rows() * Mesh.cols());
   for(auto it = MyDict.cbegin(); it != MyDict.cend(); ++it)
   {
     int l = std::get<0>(it->first);
     int m = std::get<1>(it->first);
-    tripletList.push_back(TripletD(l, m, -1.0f));
-    tripletList.push_back(TripletD(m, l, -1.0f));
+    tripletList.push_back(TripletF(l, m, -1.0f));
+    tripletList.push_back(TripletF(m, l, -1.0f));
   }
   for(int i = 0; i < fDiagCount.size(); i++)
-    tripletList.push_back(TripletD(i, i, fDiagCount[i]));
+    tripletList.push_back(TripletF(i, i, fDiagCount[i]));
 
-  SparseMatrixD GL = SparseMatrixD(nUnique.size(), nUnique.size());
+  SparseMatrixF GL = SparseMatrixF(nUnique.size(), nUnique.size());
   GL.setFromTriplets(tripletList.begin(), tripletList.end());
   GL.makeCompressed();
 

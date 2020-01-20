@@ -144,7 +144,7 @@ void HSmoothBase::merge(const Eigen::Ref<const MeshNode>& source, Eigen::Ref<Mes
 
 //============================================================================================
 
-void HSmoothBase::merge(const SparseMatrixD& source, SparseMatrixD& target, const MatIndex& locations)
+void HSmoothBase::merge(const SparseMatrixF& source, SparseMatrixF& target, const MatIndex& locations)
 {
   MeshNode src = Eigen::MatrixXf(source);
   MeshNode trg = Eigen::MatrixXf(target);

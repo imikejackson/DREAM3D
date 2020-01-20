@@ -68,7 +68,7 @@ public:
   TriMesh connectivityList() const;
   EdgeList allEdges() const;
   std::tuple<EdgeList, EdgeList> freeBoundary() const; // in proper winding order!
-  std::tuple<SparseMatrixD, MatIndex> graphLaplacian() const;
+  std::tuple<SparseMatrixF, MatIndex> graphLaplacian() const;
 
 private:
   // member objects
