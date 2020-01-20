@@ -60,7 +60,7 @@ constexpr size_t k_NodeTypesDimY = 1;
 
 struct HierarchicalSmooth::Impl
 {
-  UInt64ArrayType::ConstWeakPointer m_TriList;
+  UInt64ArrayType::WeakPointer m_TriList;
   FloatArrayType::ConstWeakPointer m_VertexList;
   Int32ArrayType::ConstWeakPointer m_FaceLabelsList;
   Int32ArrayType::ConstWeakPointer m_NodeTypesList;
@@ -249,9 +249,7 @@ void HierarchicalSmooth::execute()
     return;
   }
 
-  using TriMeshR = Eigen::Array<uint64_t, Eigen::Dynamic, k_VolumeMeshDimY, Eigen::RowMajor>;
-
-  TriMesh triangles = Eigen::Map<const TriMeshR>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY).cast<int>();
+  auto triangles = Eigen::Map<TriMesh>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY);
   auto vertices = Eigen::Map<const MeshNode>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
   auto faceLabels = Eigen::Map<const FaceLabel>(faceLabelList->data(), faceLabelList->getNumberOfTuples(), k_FaceLabelsDimY);
   auto nodeTypes = Eigen::Map<const NodeType>(nodeTypesList->data(), nodeTypesList->getNumberOfTuples(), k_NodeTypesDimY);
