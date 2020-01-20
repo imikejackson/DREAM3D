@@ -62,7 +62,7 @@ TriMesh sliceMesh(const Eigen::Ref<const TriMesh>& mesh, const std::vector<int>&
 
 void markSectionAsComplete(IsSmoothed& status, const MatIndex& idx)
 {
-  for(int i = 0; i < idx.size(); i++)
+  for(Eigen::Index i = 0; i < idx.size(); i++)
   {
     status(idx(i)) = true;
   }
@@ -76,7 +76,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
   DictBase<std::vector<int>>::EdgeDict boundaryDict;
 
   IsSmoothed status = IsSmoothed(nodeTypes.size());
-  for(int i = 0; i < nodeTypes.size(); i++)
+  for(Eigen::Index i = 0; i < nodeTypes.size(); i++)
   {
     // quad jn points considered already smoothed.
     status(i) = (nodeTypes(i) % 10 == 4);
@@ -92,10 +92,10 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
   // Filling in boundary dictionary. This also takes care of
   // flipping the direction of a mesh element as computed by
   // Dream.3d so that every element has the same hendedness.
-  for(int i = 0; i < faceLabels.rows(); i++)
+  for(Eigen::Index i = 0; i < faceLabels.rows(); i++)
   {
-    int min = std::min(faceLabels(i, 0), faceLabels(i, 1));
-    int max = std::max(faceLabels(i, 0), faceLabels(i, 1));
+    int32_t min = std::min(faceLabels(i, 0), faceLabels(i, 1));
+    int32_t max = std::max(faceLabels(i, 0), faceLabels(i, 1));
     if(faceLabels(i, 0) == min)
     {
       // this line ensures consistent handedness for entire surface
