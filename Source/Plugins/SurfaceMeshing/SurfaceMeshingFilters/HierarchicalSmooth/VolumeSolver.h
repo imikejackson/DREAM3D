@@ -49,6 +49,6 @@ namespace VolumeSolver
 using LogCallback = std::function<void(const std::string&)>;
 
 void hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eigen::Ref<const MeshNode>& surfaceNodes, const Eigen::Ref<const FaceLabel>& faceLabels, const Eigen::Ref<const NodeType>& nodeTypes,
-                        Eigen::Ref<MeshNode> smoothedNodes, uint64_t iterations = 53, LogCallback logFunction = LogCallback());
+                        Eigen::Ref<MeshNode> smoothedNodes, float threshold = 0.001f, uint64_t iterations = 53, LogCallback logFunction = LogCallback());
 
 } // namespace VolumeSolver

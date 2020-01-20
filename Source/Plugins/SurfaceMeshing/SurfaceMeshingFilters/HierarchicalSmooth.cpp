@@ -37,6 +37,7 @@
 #include "SIMPLib/FilterParameters/AbstractFilterParametersReader.h"
 #include "SIMPLib/FilterParameters/DataArraySelectionFilterParameter.h"
 #include "SIMPLib/FilterParameters/DataContainerSelectionFilterParameter.h"
+#include "SIMPLib/FilterParameters/FloatFilterParameter.h"
 #include "SIMPLib/FilterParameters/UInt64FilterParameter.h"
 #include "SIMPLib/Geometry/TriangleGeom.h"
 
@@ -81,6 +82,7 @@ struct HierarchicalSmooth::Impl
 HierarchicalSmooth::HierarchicalSmooth()
 : p_Impl(std::make_unique<Impl>())
 , m_Iterations(53)
+, m_Threshold(0.001f)
 {
   initialize();
 
@@ -105,6 +107,7 @@ void HierarchicalSmooth::setupFilterParameters()
 
   parameters.push_back(SIMPL_NEW_UINT64_FP("Max Number of Iterations", Iterations, FilterParameter::Category::Parameter, HierarchicalSmooth));
 
+  parameters.push_back(SIMPL_NEW_FLOAT_FP("Threshold", Threshold, FilterParameter::Category::Parameter, HierarchicalSmooth));
 
   {
     DataContainerSelectionFilterParameter::RequirementType req;
@@ -142,10 +145,16 @@ void HierarchicalSmooth::dataCheck()
 
   p_Impl->reset();
 
+  if(!(m_Threshold > 0.0f))
+  {
+    setErrorCondition(-10, QObject::tr("Threshold value must be positive"));
+  }
+
   auto dca = getDataContainerArray();
 
   if(dca == nullptr)
   {
+    setErrorCondition(-11, QObject::tr("Failed to obtain DataContainerArray"));
     return;
   }
 
@@ -159,19 +168,63 @@ void HierarchicalSmooth::dataCheck()
   auto triangles = triGeom->getTriangles();
   if(triangles == nullptr)
   {
+    setErrorCondition(-12, QObject::tr("Failed to obtain Triangle DataArray"));
     return;
   }
 
   auto vertices = triGeom->getVertices();
   if(vertices == nullptr)
   {
+    setErrorCondition(-13, QObject::tr("Failed to obtain Vertices DataArray"));
+    return;
+  }
+
+  const std::vector<size_t> faceLabelsComponentDims{k_FaceLabelsDimY};
+  const std::vector<size_t> nodeTypesComponentDims{k_NodeTypesDimY};
+
+  auto faceLabels = dca->getPrereqArrayFromPath<Int32ArrayType, AbstractFilter>(this, m_FaceLabelsPath, faceLabelsComponentDims);
+  if(faceLabels == nullptr)
+  {
+    return;
+  }
+
+  auto nodeTypes = dca->getPrereqArrayFromPath<Int32ArrayType, AbstractFilter>(this, m_NodeTypesPath, nodeTypesComponentDims);
+  if(nodeTypes == nullptr)
+  {
+    return;
+  }
+
+  const std::vector<size_t> trianglesComponentDims{k_VolumeMeshDimY};
+  const std::vector<size_t> verticesComponentDims{k_SurfaceNodesDimY};
+
+  if(triangles->getComponentDimensions() == trianglesComponentDims)
+  {
+    setErrorCondition(-14, QObject::tr("Triangles data array has the wrong component dimensions."));
+    return;
+  }
+
+  if(vertices->getComponentDimensions() == verticesComponentDims)
+  {
+    setErrorCondition(-15, QObject::tr("Vertices data array has the wrong component dimensions."));
+    return;
+  }
+
+  if(triangles->getNumberOfTuples() != faceLabels->getNumberOfTuples())
+  {
+    setErrorCondition(-16, QObject::tr("Face labels data array and triangles data array must have the same number of tuples."));
+    return;
+  }
+
+  if(vertices->getNumberOfTuples() != nodeTypes->getNumberOfTuples())
+  {
+    setErrorCondition(-17, QObject::tr("Node types data array and vertices data array must have the same number of tuples."));
     return;
   }
 
   p_Impl->m_TriList = triangles;
   p_Impl->m_VertexList = vertices;
-  p_Impl->m_FaceLabelsList = dca->getPrereqArrayFromPath<Int32ArrayType, AbstractFilter>(this, m_FaceLabelsPath, {k_FaceLabelsDimY});
-  p_Impl->m_NodeTypesList = dca->getPrereqArrayFromPath<Int32ArrayType, AbstractFilter>(this, m_NodeTypesPath, {k_NodeTypesDimY});
+  p_Impl->m_FaceLabelsList = faceLabels;
+  p_Impl->m_NodeTypesList = nodeTypes;
 }
 
 // -----------------------------------------------------------------------------
@@ -204,25 +257,34 @@ void HierarchicalSmooth::execute()
   auto triList = p_Impl->m_TriList.lock();
   if(triList == nullptr)
   {
+    setErrorCondition(-18, QObject::tr("Failed to obtain %1").arg(triList->getDataArrayPath().serialize()));
     return;
   }
   auto vertexList = p_Impl->m_VertexList.lock();
   if(vertexList == nullptr)
   {
+    setErrorCondition(-19, QObject::tr("Failed to obtain %1").arg(vertexList->getDataArrayPath().serialize()));
     return;
   }
   auto faceLabelList = p_Impl->m_FaceLabelsList.lock();
   if(faceLabelList == nullptr)
   {
+    setErrorCondition(-20, QObject::tr("Failed to obtain %1").arg(faceLabelList->getDataArrayPath().serialize()));
     return;
   }
   auto nodeTypesList = p_Impl->m_NodeTypesList.lock();
   if(nodeTypesList == nullptr)
   {
+    setErrorCondition(-21, QObject::tr("Failed to obtain %1").arg(nodeTypesList->getDataArrayPath().serialize()));
     return;
   }
 
   auto smoothedVertexList = FloatArrayType::CreateArray(vertexList->getNumberOfTuples(), vertexList->getComponentDimensions(), vertexList->getName(), true);
+  if(smoothedVertexList == nullptr)
+  {
+    setErrorCondition(-22, QObject::tr("Failed to create output DataArray"));
+    return;
+  }
 
   auto triangles = Eigen::Map<TriMesh>(triList->data(), triList->getNumberOfTuples(), k_VolumeMeshDimY);
   auto vertices = Eigen::Map<const MeshNode>(vertexList->data(), vertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
@@ -233,7 +295,7 @@ void HierarchicalSmooth::execute()
 
   auto smoothedVertices = Eigen::Map<MeshNode>(smoothedVertexList->data(), smoothedVertexList->getNumberOfTuples(), k_SurfaceNodesDimY);
 
-  VolumeSolver::hierarchicalSmooth(triangles, vertices, faceLabels, nodeTypes, smoothedVertices, m_Iterations, logFunc);
+  VolumeSolver::hierarchicalSmooth(triangles, vertices, faceLabels, nodeTypes, smoothedVertices, m_Threshold, m_Iterations, logFunc);
 
   smoothedVertexList->copyIntoArray(vertexList);
 }
@@ -331,6 +393,18 @@ void HierarchicalSmooth::setIterations(uint64_t value)
 uint64_t HierarchicalSmooth::getIterations() const
 {
   return m_Iterations;
+}
+
+// -----------------------------------------------------------------------------
+void HierarchicalSmooth::setThreshold(float value)
+{
+  m_Threshold = value;
+}
+
+// -----------------------------------------------------------------------------
+float HierarchicalSmooth::getThreshold() const
+{
+  return m_Threshold;
 }
 
 // -----------------------------------------------------------------------------

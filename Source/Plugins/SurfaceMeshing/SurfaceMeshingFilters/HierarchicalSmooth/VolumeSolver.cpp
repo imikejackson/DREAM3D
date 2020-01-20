@@ -71,7 +71,7 @@ void markSectionAsComplete(IsSmoothed& status, const MatIndex& idx)
 } // namespace
 
 void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eigen::Ref<const MeshNode>& surfaceNodes, const Eigen::Ref<const FaceLabel>& faceLabels,
-                                      const Eigen::Ref<const NodeType>& nodeTypes, Eigen::Ref<MeshNode> smoothedNodes, uint64_t iterations, LogCallback logFunction)
+                                      const Eigen::Ref<const NodeType>& nodeTypes, Eigen::Ref<MeshNode> smoothedNodes, float threshold, uint64_t iterations, LogCallback logFunction)
 {
   DictBase<std::vector<int>>::EdgeDict boundaryDict;
 
@@ -157,7 +157,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
         MatIndex thisFreeBoundaryIdx = base::getIndex(vtemp);
         MeshNode thisFreeBoundary;
         slice::slice(smoothedNodes, thisFreeBoundaryIdx, k_Three, thisFreeBoundary);
-        MeshNode thisFreeBoundarySmooth = smooth::smooth(thisFreeBoundary, smooth::Type::Cyclic, 0.001f, iterations);
+        MeshNode thisFreeBoundarySmooth = smooth::smooth(thisFreeBoundary, smooth::Type::Cyclic, threshold, iterations);
         base::merge(thisFreeBoundarySmooth, smoothedNodes, thisFreeBoundaryIdx);
         markSectionAsComplete(status, thisFreeBoundaryIdx);
       }
@@ -180,7 +180,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
             {
               MeshNode thisTripleLine, thisTripleLineSmoothed;
               slice::slice(smoothedNodes, thisTripleLineIndex, k_Three, thisTripleLine);
-              thisTripleLineSmoothed = smooth::smooth(thisTripleLine, smooth::Type::Serial, 0.001f, iterations);
+              thisTripleLineSmoothed = smooth::smooth(thisTripleLine, smooth::Type::Serial, threshold, iterations);
               base::merge(thisTripleLineSmoothed, smoothedNodes, thisTripleLineIndex); /* HAVEN'T CHECKED FOR BUGS */
               markSectionAsComplete(status, thisTripleLineIndex);
             }
@@ -199,7 +199,7 @@ void VolumeSolver::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, const Eige
       fixed.push_back(std::get<0>(freeBoundry[i]));
     }
     MatIndex nFixed = base::getIndex(fixed, nUniq);
-    MeshNode BoundaryNodeSmooth = smooth::smooth(boundaryNode, nFixed, GL, 0.001f, iterations);
+    MeshNode BoundaryNodeSmooth = smooth::smooth(boundaryNode, nFixed, GL, threshold, iterations);
     base::merge(BoundaryNodeSmooth, smoothedNodes, nUniq);
     markSectionAsComplete(status, nUniq);
     // Done. Get out.

@@ -50,6 +50,7 @@ class SurfaceMeshing_EXPORT HierarchicalSmooth : public AbstractFilter
   PYB11_SHARED_POINTERS(HierarchicalSmooth)
   PYB11_STATIC_NEW_MACRO(HierarchicalSmooth)
   PYB11_PROPERTY(uint64_t Iterations READ getIterations WRITE setIterations)
+  PYB11_PROPERTY(float Threshold READ getThreshold WRITE setThreshold)
   PYB11_PROPERTY(DataArrayPath DataContainerPath READ getDataContainerPath WRITE setDataContainerPath)
   PYB11_PROPERTY(DataArrayPath FaceLabelsPath READ getFaceLabelsPath WRITE setFaceLabelsPath)
   PYB11_PROPERTY(DataArrayPath NodeTypesPath READ getNodeTypesPath WRITE setNodeTypesPath)
@@ -91,6 +92,20 @@ public:
   void setIterations(uint64_t value);
 
   Q_PROPERTY(uint64_t Iterations READ getIterations WRITE setIterations)
+
+  /**
+   * @brief Getter property for Threshold
+   * @return
+   */
+  float getThreshold() const;
+
+  /**
+   * @brief Setter property for Threshold
+   * @param value
+   */
+  void setThreshold(float value);
+
+  Q_PROPERTY(float Threshold READ getThreshold WRITE setThreshold)
 
   /**
    * @brief Getter property for DataContainerPath
@@ -243,6 +258,7 @@ private:
   std::unique_ptr<Impl> p_Impl;
 
   uint64_t m_Iterations;
+  float m_Threshold;
 
   DataArrayPath m_DataContainerPath;
 

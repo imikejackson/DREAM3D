@@ -202,10 +202,9 @@ MeshNode HSmoothMain::smooth(const MeshNode& nodes, const MatIndex& nFixed, cons
   float fStep = fEps / 2.0f;
   uint64_t nCount = 1;
 
-  float fobj1, fobj2, fslope;
-  fobj1 = getObjFn(smth, fEps, fSmallEye, LTL, LTK, Data, nMobile, yMobile, D, AyIn, yOut); // only the last parameter is actually modified
-  fobj2 = getObjFn(smth, fEps + threshold, fSmallEye, LTL, LTK, Data, nMobile, yMobile, D, AyIn, yOut);
-  fslope = (fobj2 - fobj1) / threshold;
+  float fobj1 = getObjFn(smth, fEps, fSmallEye, LTL, LTK, Data, nMobile, yMobile, D, AyIn, yOut); // only the last parameter is actually modified
+  float fobj2 = getObjFn(smth, fEps + threshold, fSmallEye, LTL, LTK, Data, nMobile, yMobile, D, AyIn, yOut);
+  float fslope = (fobj2 - fobj1) / threshold;
 
   while(fabs(fslope) < threshold && nCount < iterations)
   {
