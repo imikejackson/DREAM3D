@@ -257,25 +257,25 @@ void HierarchicalSmoothing::execute()
   auto triList = p_Impl->m_TriList.lock();
   if(triList == nullptr)
   {
-    setErrorCondition(-18, QObject::tr("Failed to obtain %1").arg(triList->getDataArrayPath().serialize()));
+    setErrorCondition(-18, QObject::tr("Failed to obtain triangle data array"));
     return;
   }
   auto vertexList = p_Impl->m_VertexList.lock();
   if(vertexList == nullptr)
   {
-    setErrorCondition(-19, QObject::tr("Failed to obtain %1").arg(vertexList->getDataArrayPath().serialize()));
+    setErrorCondition(-19, QObject::tr("Failed to obtain vertices data array"));
     return;
   }
   auto faceLabelList = p_Impl->m_FaceLabelsList.lock();
   if(faceLabelList == nullptr)
   {
-    setErrorCondition(-20, QObject::tr("Failed to obtain %1").arg(faceLabelList->getDataArrayPath().serialize()));
+    setErrorCondition(-20, QObject::tr("Failed to obtain %1").arg(m_FaceLabelsPath.serialize()));
     return;
   }
   auto nodeTypesList = p_Impl->m_NodeTypesList.lock();
   if(nodeTypesList == nullptr)
   {
-    setErrorCondition(-21, QObject::tr("Failed to obtain %1").arg(nodeTypesList->getDataArrayPath().serialize()));
+    setErrorCondition(-21, QObject::tr("Failed to obtain %1").arg(m_NodeTypesPath.serialize()));
     return;
   }
 
