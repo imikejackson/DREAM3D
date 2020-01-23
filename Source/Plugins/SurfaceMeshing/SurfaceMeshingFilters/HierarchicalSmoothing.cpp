@@ -339,7 +339,7 @@ QString HierarchicalSmoothing::getFilterVersion() const
 // -----------------------------------------------------------------------------
 QString HierarchicalSmoothing::getGroupName() const
 {
-  return SIMPL::FilterGroups::Unsupported;
+  return SIMPL::FilterGroups::SurfaceMeshingFilters;
 }
 
 // -----------------------------------------------------------------------------
