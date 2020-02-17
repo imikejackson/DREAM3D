@@ -88,6 +88,11 @@ void HierarchicalSmooth::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, cons
   // Filling in boundary dictionary. This also takes care of
   // flipping the direction of a mesh element as computed by
   // Dream.3d so that every element has the same hendedness.
+  std::stringstream ss;
+  ss.str("");
+  ss << "Adjusting Winding of Triangles....";
+  logFunction(ss.str());
+
   for(Eigen::Index i = 0; i < faceLabels.rows(); i++)
   {
     int32_t min = std::min(faceLabels(i, 0), faceLabels(i, 1));
@@ -114,6 +119,9 @@ void HierarchicalSmooth::hierarchicalSmooth(Eigen::Ref<TriMesh> volumeMesh, cons
     }
   }
 
+  ss.str("");
+  ss << "Looping on the boundary dictionary of " << boundaryDict.size() << " elements....";
+  logFunction(ss.str());
   for(auto iter = boundaryDict.cbegin(); iter != boundaryDict.cend(); iter++)
   {
     TriMesh triSub = sliceMesh(volumeMesh, iter->second);

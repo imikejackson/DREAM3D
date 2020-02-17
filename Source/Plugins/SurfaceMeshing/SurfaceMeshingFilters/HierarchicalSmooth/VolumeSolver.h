@@ -42,7 +42,7 @@
 #include <functional>
 #include <string>
 
-#include "Types.h"
+#include "HierarchicalSmoothTypes.h"
 
 namespace HierarchicalSmooth
 {

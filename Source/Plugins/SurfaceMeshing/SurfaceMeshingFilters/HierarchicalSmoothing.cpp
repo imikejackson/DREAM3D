@@ -55,8 +55,8 @@ constexpr size_t k_NodeTypesDimY = 1;
 
 struct HierarchicalSmoothing::Impl
 {
-  UInt64ArrayType::WeakPointer m_TriList;
-  FloatArrayType::WeakPointer m_VertexList;
+  SharedTriList::WeakPointer m_TriList;
+  SharedVertexList::WeakPointer m_VertexList;
   Int32ArrayType::ConstWeakPointer m_FaceLabelsList;
   Int8ArrayType::ConstWeakPointer m_NodeTypesList;
 

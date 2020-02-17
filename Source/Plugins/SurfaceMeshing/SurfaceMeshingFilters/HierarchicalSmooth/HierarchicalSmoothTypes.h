@@ -53,7 +53,7 @@ namespace HierarchicalSmooth
  * Eigen array of integer triplets; the prototype of Delaunay
  * triangulations in this library.
  */
-using TriMesh = Eigen::Array<uint64_t, Eigen::Dynamic, 3, Eigen::RowMajor>;
+using TriMesh = Eigen::Array<size_t, Eigen::Dynamic, 3, Eigen::RowMajor>;
 
 /*
  * MeshNode:

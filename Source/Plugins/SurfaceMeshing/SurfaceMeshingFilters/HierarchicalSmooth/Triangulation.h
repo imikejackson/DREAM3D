@@ -43,7 +43,7 @@
 
 #pragma once
 
-#include "Types.h"
+#include "HierarchicalSmoothTypes.h"
 
 namespace HierarchicalSmooth
 {
