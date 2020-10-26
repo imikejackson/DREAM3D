@@ -37,11 +37,12 @@
 #include <QtCore/QTextStream>
 
 #include "SIMPLib/Common/Constants.h"
+#include "SIMPLib/DataContainers/DataContainerArray.h"
 #include "SIMPLib/FilterParameters/AbstractFilterParametersReader.h"
 #include "SIMPLib/FilterParameters/DataArrayCreationFilterParameter.h"
 #include "SIMPLib/FilterParameters/DataArraySelectionFilterParameter.h"
 #include "SIMPLib/FilterParameters/SeparatorFilterParameter.h"
-#include "SIMPLib/DataContainers/DataContainerArray.h"
+#include "SIMPLib/Math/SIMPLibMath.h"
 
 #include "EbsdLib/Core/Orientation.hpp"
 #include "EbsdLib/Core/OrientationTransformation.hpp"
@@ -197,6 +198,13 @@ void FindAvgOrientations::dataCheck()
     m_CrystalStructures = m_CrystalStructuresPtr.lock()->getPointer(0);
   } /* Now assign the raw pointer to data from the DataArray<T> object */
 
+  AttributeMatrix::Pointer cellAM = getDataContainerArray()->getAttributeMatrix(getQuatsArrayPath());
+  Int32ArrayType::Pointer cellIds = Int32ArrayType::CreateArray(0, std::string("Cell Ids"), false);
+
+  DataArrayPath dap = getQuatsArrayPath();
+  dap.setDataArrayName("Cell Ids");
+  getDataContainerArray()->createNonPrereqArrayFromPath<DataArray<float>>(this, dap, 0, {1});
+
   getDataContainerArray()->validateNumberOfTuples(this, dataArrayPaths);
 }
 
@@ -216,57 +224,79 @@ void FindAvgOrientations::execute()
 
   size_t totalPoints = m_FeatureIdsPtr.lock()->getNumberOfTuples();
   size_t totalFeatures = m_AvgQuatsPtr.lock()->getNumberOfTuples();
-
-  std::vector<float> counts(totalFeatures, 0.0f);
-
   int32_t phase = 0;
 
-  m_AvgQuatsPtr.lock()->initializeWithZeros();
+  std::vector<double> lsum(totalFeatures * 3, 0.0);
+  std::vector<size_t> featureVoxelCount(totalFeatures, 0);
+  std::vector<QuatD> featureRefQuats(totalFeatures);
+  std::vector<std::array<double, 3>> refVectors(totalFeatures);
 
-  float* avgQuatsPtr = nullptr;
-  float* currentVoxelQuatPtr = nullptr;
-  // Initialize all Average Quats to Identity
-  for(size_t i = 1; i < totalFeatures; i++)
-  {
-    avgQuatsPtr = m_AvgQuats + i * 4;                                           // Get the pointer to the current average quaternion
-    QuatF qAvg(avgQuatsPtr[0], avgQuatsPtr[1], avgQuatsPtr[2], avgQuatsPtr[3]); // Create a copy of the quaternion
-    qAvg = QuatF::identity();
-    qAvg.copyInto(avgQuatsPtr, QuatF::Order::VectorScalar);
-  }
-  // Initialize all Euler Angles to Zero
-  m_FeatureEulerAnglesPtr.lock()->initializeWithZeros();
+  AttributeMatrix::Pointer cellAM = getDataContainerArray()->getAttributeMatrix(getQuatsArrayPath());
+  Int32ArrayType::Pointer cellIds = Int32ArrayType::CreateArray(totalPoints, std::string("Cell Ids"), true);
+  cellAM->addOrReplaceAttributeArray(cellIds);
 
+  // convert each voxel's quaternion to a logarithm (q), which is really the unit rotation vector multiplied by half the rotation angle
   for(size_t i = 0; i < totalPoints; i++)
   {
-    if(m_FeatureIds[i] > 0 && m_CellPhases[i] > 0)
+    cellIds->setValue(i, i);
+    phase = m_CellPhases[i];
+    QuatD q = QuatD::CopyFrom<float>(m_Quats + i * 4, QuatD::Order::VectorScalar); // Makes a copy into voxquat!!!!
+    int32_t featureId = m_FeatureIds[i];
+    // Use the first orientation from the grain as the "reference" orientation to keep all orientations inside the same side of the FZ
+    if(featureVoxelCount[featureId] == 0)
     {
-      counts[m_FeatureIds[i]] += 1.0f;
-      phase = m_CellPhases[i];
-
-      avgQuatsPtr = m_AvgQuats + m_FeatureIds[i] * 4;                                   // Get the pointer to the current average quaternion
-      QuatF curavgquat(avgQuatsPtr[0], avgQuatsPtr[1], avgQuatsPtr[2], avgQuatsPtr[3]); // Makes a copy into curavgquat!!!!
-      curavgquat.scalarDivide(counts[m_FeatureIds[i]]);
-
-      currentVoxelQuatPtr = m_Quats + i * 4;                                                                         // Get the pointer to the current voxel's Quaternion
-      QuatF voxquat(currentVoxelQuatPtr[0], currentVoxelQuatPtr[1], currentVoxelQuatPtr[2], currentVoxelQuatPtr[3]); // Makes a copy into voxquat!!!!
-      QuatF nearestQuat = m_OrientationOps[m_CrystalStructures[phase]]->getNearestQuat(curavgquat, voxquat);
-
-      // QuatF qSum(m_AvgQuats + m_FeatureIds[i] * 4); // Makes a copy into qSum!!!!
-      curavgquat = curavgquat + nearestQuat;
-      curavgquat.copyInto(avgQuatsPtr, Quaternion<float>::Order::VectorScalar); // Copy back into the m_AvgQuats storage
+      featureRefQuats[featureId] = q;
     }
+
+    // Ensure that we use the symmetrically closest orientation to avoid going over the FZ boundary.
+    QuatD nearestQuat = m_OrientationOps[m_CrystalStructures[phase]]->getNearestQuat(featureRefQuats[featureId], q);
+
+    OrientationD ax = OrientationTransformation::qu2ax<QuatD, OrientationD>(nearestQuat);
+    ax[0] = (ax[0] * 0.5 * ax[3]);
+    ax[1] = (ax[1] * 0.5 * ax[3]);
+    ax[2] = (ax[2] * 0.5 * ax[3]);
+
+    if(featureVoxelCount[featureId] == 0)
+    {
+      refVectors[featureId] = {ax[0], ax[1], ax[2]};
+    }
+
+    double dotProd = refVectors[featureId][0] * ax[0] + refVectors[featureId][1] * ax[1] + refVectors[featureId][2] * ax[2];
+    if(dotProd < 0.0)
+    {
+      ax[0] *= -1;
+      ax[1] *= -1;
+      ax[2] *= -1;
+    }
+    // Compute the running sums of the arithmetic mean for each feature's orientations
+    lsum[featureId * 3] += ax[0];
+    lsum[featureId * 3 + 1] += ax[1];
+    lsum[featureId * 3 + 2] += ax[2];
+    featureVoxelCount[featureId]++;
   }
 
-  for(size_t i = 1; i < totalFeatures; i++)
+  // compute the average of each component
+  for(size_t featureId = 0; featureId < totalFeatures; featureId++)
   {
-    avgQuatsPtr = m_AvgQuats + i * 4;                                           // Get the pointer to the current average quaternion
-    QuatF qAvg(avgQuatsPtr[0], avgQuatsPtr[1], avgQuatsPtr[2], avgQuatsPtr[3]); // Create a copy of the quaternion
-    qAvg.scalarDivide(counts[i]);
-    qAvg = qAvg.unitQuaternion();
-    qAvg.copyInto(avgQuatsPtr, QuatF::Order::VectorScalar);
+    lsum[featureId * 3] /= featureVoxelCount[featureId];
+    lsum[featureId * 3 + 1] /= featureVoxelCount[featureId];
+    lsum[featureId * 3 + 2] /= featureVoxelCount[featureId];
+  }
 
-    OrientationF eu = OrientationTransformation::qu2eu<Quaternion<float>, Orientation<float>>(qAvg);
-    eu.copyInto(m_FeatureEulerAngles + (3 * i), 3);
+  // then convert this average back to a quaternion via the exponentiation operation
+  for(size_t featureId = 0; featureId < totalFeatures; featureId++)
+  {
+    double sumOfSquares = (lsum[featureId * 3] * lsum[featureId * 3]) + (lsum[featureId * 3 + 1] * lsum[featureId * 3 + 1]) + (lsum[featureId * 3 + 2] * lsum[featureId * 3 + 2]);
+    double qv = std::sqrt(sumOfSquares);
+    double sqv = std::sin(qv) / qv;
+    QuatD res(lsum[featureId * 3] * sqv, lsum[featureId * 3 + 1] * sqv, lsum[featureId * 3 + 2] * sqv, std::cos(qv));
+    if(res.w() < 0.0)
+    {
+      res.negate();
+    }
+    res.to<float>().copyInto(m_AvgQuats + (featureId * 4), QuatF::Order::VectorScalar); // Copy the average quaternion back into the output array
+    OrientationF eu = OrientationTransformation::qu2eu<QuatD, OrientationF>(res);
+    eu.copyInto(m_FeatureEulerAngles + (3 * featureId), 3); // Copy the result Euler Angle back into the output array
   }
 }
 
